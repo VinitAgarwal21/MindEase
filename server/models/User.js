@@ -18,7 +18,6 @@ const userSchema = new mongoose.Schema({
     required: true,
     select: false // do not include by default in queries
   },
-  dateOfBirth: Date,
   gender: String,
   profilePicture: String,
   journals: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Journal' }],
