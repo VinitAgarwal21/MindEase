@@ -1,5 +1,5 @@
 import dotenv from "dotenv";
-import express from "express"
+import express, { urlencoded } from "express"
 import cookieParser from "cookie-parser";
 import cors from "cors";
 
@@ -10,7 +10,7 @@ const app = express();
 //middlewares
 app.use(express.json());
 app.use(cookieParser());
-app.use(urlencoded({extended:true}));
+app.use(urlencoded({ extended: true }));
 
 // Configuring CORS
 const corsOptions = {
@@ -21,7 +21,7 @@ app.use(cors(corsOptions));
 
 const PORT = 3000;
 
-app.listen(PORT, ()=>{
+app.listen(PORT, () => {
     console.log(`Server running at port ${PORT}`)
 })
 
