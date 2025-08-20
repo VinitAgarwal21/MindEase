@@ -1,9 +1,11 @@
 import dotenv from "dotenv";
+import connectDB from "./config/db.js";
 import express, { urlencoded } from "express"
 import cookieParser from "cookie-parser";
 import cors from "cors";
 
 dotenv.config({});
+connectDB();
 
 const app = express();
 
