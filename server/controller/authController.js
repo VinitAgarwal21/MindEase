@@ -1,9 +1,6 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import dotenv from "dotenv";
 import User from "../models/User.js";
-
-dotenv.config();
 
 // Register a new user
 export const registerUser = async (req, res) => {
