@@ -23,11 +23,11 @@ const userSchema = new mongoose.Schema({
   journals: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Journal' }],
   yogaTracker: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Tracker' }],
   musicPreferences: [String],
-  role: {
-    type: String,
-    enum: ['user', 'therapist'],
-    default: 'user'
-  },
+  // role: {
+  //   type: String,
+  //   enum: ['user', 'therapist'],
+  //   default: 'user'
+  // },
   // Add more fields if needed
 }, {timestamps: true});
 
