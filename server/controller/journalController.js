@@ -1,9 +1,9 @@
-import Journal from "../models/Journal.js";
+import {Journal} from "../models/Journal.js";
 
 // Create a new journal entry
 export const createJournal = async (req, res) => {
     try {
-        const { title, content, mood, tags, isPrivate } = req.body;
+        const { title, content, mood, tags } = req.body;
 
         const journal = await Journal.create({
             user: req.user.id, // from auth middleware
@@ -49,7 +49,7 @@ export const getJournalById = async (req, res) => {
 // Update a journal entry
 export const updateJournal = async (req, res) => {
     try {
-        const { title, content, mood, tags, isPrivate } = req.body;
+        const { title, content, mood, tags } = req.body;
 
         // Only update if journal belongs to logged-in user
         const journal = await Journal.findOneAndUpdate(

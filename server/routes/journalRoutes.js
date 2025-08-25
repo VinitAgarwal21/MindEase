@@ -7,7 +7,7 @@ import {
   getJournalById,
   updateJournal,
   deleteJournal,
-} from "../controllers/journalController.js";
+} from "../controller/journalController.js";
 
 
 const router = express.Router();

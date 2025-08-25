@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const journalSchema = new mongoose.Schema({
     user: {
-      type: Schema.Types.ObjectId,
+      type: mongoose.Schema.Types.ObjectId,
       ref: "User", // Link to User model
       required: true,
     },

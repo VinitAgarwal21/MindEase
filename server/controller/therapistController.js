@@ -1,4 +1,4 @@
-import Therapist from "../models/Therapist.js";
+import { Therapist } from "../models/Therapist.js";
 
 // Get all therapists (public)
 export const getAllTherapists = async (req, res) => {
@@ -30,30 +30,31 @@ export const updateTherapistProfile = async (req, res) => {
     try {
         // Only update if therapist is self or admin (you can expand this logic as needed)
         if (req.user.role !== "therapist") {
-            return res.status(403).json({ message: "Access denied" });
-        }
-        if (req.user.role === "therapist" && req.user.id !== req.params.id) {
-            return res.status(403).json({ message: "Can only update your own profile" });
+            return res.status(403).json({ message: "Access denied. Only therapists can update profiles." });
         }
 
         const updateFields = req.body;
 
-        const therapist = await Therapist.findByIdAndUpdate(
-            req.params.id,
+        const therapistProfile = await Therapist.findOneAndUpdate(
+            { user: req.user.id },
             updateFields,
             { new: true, runValidators: true }
         ).select("-password");
 
-        if (!therapist) {
+        if (!therapistProfile) {
             return res.status(404).json({ message: "Therapist not found" });
         }
-        res.json(therapist);
+        res.json({
+            message: "Profile updated successfully!",
+            profile: therapistProfile
+        });
     } catch (err) {
         console.error("Update therapist profile error:", err);
         res.status(500).json({ message: "Server error" });
     }
 };
 
+// Will do it later
 // Delete therapist profile (protected)
 export const deleteTherapist = async (req, res) => {
     try {
