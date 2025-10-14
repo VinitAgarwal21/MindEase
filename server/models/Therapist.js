@@ -1,22 +1,28 @@
 import mongoose from "mongoose"
 
 const therapistSchema = new mongoose.Schema({
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
+    unique: true
+  },
+  // email: {
+  //   type: String,
+  //   required: true,
+  //   unique: true,
+  //   lowercase: true,
+  //   trim: true,
+  // },
+  // password: {
+  //   type: String,
+  //   required: true,
+  //   select: false,
+  // },
   name: {
     type: String,
     required: true,
     trim: true,
-  },
-  email: {
-    type: String,
-    required: true,
-    unique: true,
-    lowercase: true,
-    trim: true,
-  },
-  password: {
-    type: String,
-    required: true,
-    select: false,
   },
   specialization: [String],        // E.g., ['Anxiety', 'Depression']
   qualifications: String,
@@ -44,6 +50,6 @@ const therapistSchema = new mongoose.Schema({
   //   default: Date.now,
   // },
   // Add more fields if needed for therapist profile
-}, {timestamps: true});
+}, { timestamps: true });
 
 export const Therapist = mongoose.model('Therapist', therapistSchema);

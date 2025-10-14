@@ -1,11 +1,12 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import User from "../models/User.js";
+import {User} from "../models/User.js";
+import { Therapist } from "../models/Therapist.js";
 
 // Register a new user
 export const registerUser = async (req, res) => {
     try {
-        const { name, email, password, gender, role } = req.body;
+        const {  name, email, password, gender, role, specialization, bio } = req.body;
 
         // See if user already exists
         const userExists = await User.findOne({ email });
@@ -13,7 +14,7 @@ export const registerUser = async (req, res) => {
             return res.status(400).json({ message: "User already exists" });
         }
 
-        // Hash password
+        // Hash password    
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
@@ -25,6 +26,16 @@ export const registerUser = async (req, res) => {
             gender,
             role
         });
+
+        if (user.role === 'therapist') {
+            const therapistProfile = await Therapist.create({
+                user: user._id, // Link to the User document
+                name: user.name,
+                specialization: specialization || [], // Use data from request or default
+                bio: bio || ""
+            });
+            console.log("Profile for therapist created successfully")
+        }
 
         // Create JWT
         const token = jwt.sign(

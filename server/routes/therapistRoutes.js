@@ -4,7 +4,7 @@ import {
   getTherapistById,
   updateTherapistProfile,
   deleteTherapist,
-} from "../controllers/therapistController.js";
+} from "../controller/therapistController.js";
 
 import authMiddleware from "../middleware/auth.js";
 

@@ -3,6 +3,9 @@ import connectDB from "./config/db.js";
 import express, { urlencoded } from "express"
 import cookieParser from "cookie-parser";
 import cors from "cors";
+import authRoutes from "./routes/authRoutes.js";
+import journalRoutes from "./routes/journalRoutes.js";
+import therapistRoutes from "./routes/therapistRoutes.js";
 
 dotenv.config({});
 connectDB();
@@ -23,10 +26,15 @@ app.use(cors(corsOptions));
 
 const PORT = 3000;
 
-app.listen(PORT, () => {
-    console.log(`Server running at port ${PORT}`)
-})
+app.use("/api/auth", authRoutes);
+app.use("/api/journals", journalRoutes);
+app.use("/api/therapists", therapistRoutes);
+
 
 app.get('/', (req, res) => {
     res.send('Welcome')
+})
+
+app.listen(PORT, () => {
+    console.log(`Server running at port ${PORT}`)
 })
