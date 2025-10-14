@@ -11,7 +11,7 @@ export default function Navbar() {
           <a href="#features" className="text-sm hover:text-mindease-600">Features</a>
           <Link to="/dashboard" className="text-sm hover:text-mindease-600">Dashboard</Link>
           <Link
-            to="/"
+            to="/auth"
             className="px-4 py-2 rounded-full bg-mindease-500 text-white hover:bg-mindease-600 transition"
           >
             Get Started

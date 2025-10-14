@@ -3,7 +3,9 @@ import MainLayout from "./layouts/MainLayout";
 import Home from "./pages/Home";
 import VideosPage from "./pages/Videos";
 import TherapistChat from "./pages/TherapistChat";
-
+import TherapistDetail from "./pages/TherapistDetail";
+import Therapists from "./pages/Therapists";
+import Auth from "./pages/Auth";
 function App() {
   return (
     <Routes>
@@ -11,7 +13,10 @@ function App() {
         <Route path="/" element={<Home />} />
         {/* later: <Route path="/dashboard" element={<Dashboard />} /> */}
         <Route path="/videos" element={<VideosPage />} />
-          <Route path="/therapist" element={<TherapistChat />} />
+          <Route path="/therapistchat" element={<TherapistChat />} />
+             <Route path="/therapist" element={<Therapists />} />
+        <Route path="/therapist/:id" element={<TherapistDetail />} />
+        <Route path="/auth" element={<Auth />} />
       </Route>
     </Routes>
   );
