@@ -54,6 +54,7 @@ export const registerUser = async (req, res) => {
                 role: user.role,
             },
             token,
+            message: "Registration successful!",
         });
     } catch (err) {
         console.error("Registration error:", err);
@@ -87,6 +88,7 @@ export const loginUser = async (req, res) => {
 
         // Return user and token
         res.json({
+            message: "Login successful!",
             user: {
                 id: user._id,
                 name: user.name,
