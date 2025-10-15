@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import {
   Book, Sparkles, Lock, Calendar, ChevronRight, BarChart2, FileText,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 import Button from "../components/ui/Button";
 import Card from "../components/ui/Card";
@@ -19,6 +20,7 @@ const features = [
 
 export default function Home() {
   const [advice, setAdvice] = useState(null);
+  const navigate = useNavigate();
   useEffect(() => {
     // later: fetch from backend /api/daily-prompt
     setAdvice("Take a deep breath and write one honest sentence.");
@@ -170,7 +172,7 @@ export default function Home() {
           <p className="text-lg text-mindease-700 mb-8 max-w-2xl mx-auto">
             Join thousands who have already discovered the power of digital journaling.
           </p>
-          <Button className="px-8 py-4 rounded-full bg-mindease-500 text-white hover:bg-mindease-600">
+          <Button className="px-8 py-4 rounded-full bg-mindease-500 text-white hover:bg-mindease-600" onClick={() => {navigate("/auth")}}>
             Get Started for Free <ChevronRight className="ml-2 h-4 w-4" />
           </Button>
         </Card>

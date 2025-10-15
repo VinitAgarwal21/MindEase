@@ -1,8 +1,10 @@
 import axios from "axios";
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext.jsx";
+import { useNavigate } from "react-router-dom";
 
 const Auth = () => {
+  const navigate = useNavigate();
   const { login } = useAuth();
 
   const [isLogin, setIsLogin] = useState(true);
@@ -31,10 +33,9 @@ const Auth = () => {
         `http://localhost:5000/api/auth${endpoint}`,
         formData
       );
-      console.log(data)
       alert(data.message);
-      console.log(data.message)
       login(data.user, data.token);
+      navigate("/");
     } catch (error) {
       alert(error.response?.data?.message || "Something went wrong");
       console.error(error);

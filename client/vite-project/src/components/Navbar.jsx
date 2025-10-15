@@ -17,18 +17,25 @@ export default function Navbar() {
     <header className="sticky top-0 z-40 bg-white/70 backdrop-blur border-b">
       <div className="container mx-auto px-4 h-14 flex items-center justify-between">
         {/* Logo */}
-        <Link to="/" className="font-display text-xl font-bold text-mindease-600">
+        <Link to="/" className="font-display text-3xl font-bold text-mindease-600">
           MindEase
         </Link>
 
         {/* Navigation */}
         <nav className="flex items-center gap-4 relative">
-          <a href="#features" className="text-sm hover:text-mindease-600">
-            Features
-          </a>
-          <Link to="/dashboard" className="text-sm hover:text-mindease-600">
+         <Link to='/therapist' className="text-sm hover:text-mindease-600">
+            Therapists
+         </Link>
+         <Link to='/therapistchat' className="text-sm hover:text-mindease-600">
+            Chat
+         </Link>
+          <Link to='/videos' className="text-sm hover:text-mindease-600">
+            Explore
+         </Link>
+
+          {/* <Link to="/dashboard" className="text-sm hover:text-mindease-600">
             Dashboard
-          </Link>
+          </Link> */}
 
           {/* Conditional Render */}
           {!user ? (
