@@ -35,6 +35,7 @@ app.use("/api/therapists", therapistRoutes);
 app.use("/api/appointments", appointmentRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/ai", aiRoutes);
+app.use("/api/journals", journalRoutes);
 
 app.get('/', (req, res) => {
     res.send('Welcome')
