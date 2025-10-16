@@ -7,6 +7,7 @@ import authRoutes from "./routes/authRoutes.js";
 import journalRoutes from "./routes/journalRoutes.js";
 import therapistRoutes from "./routes/therapistRoutes.js";
 import appointmentRoutes from "./routes/appointmentRoutes.js";
+import userRoutes from "./routes/userRoutes.js";
 
 dotenv.config({});
 connectDB();
@@ -31,7 +32,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/journals", journalRoutes);
 app.use("/api/therapists", therapistRoutes);
 app.use("/api/appointments", appointmentRoutes);
-
+app.use("/api/users", userRoutes);
 
 app.get('/', (req, res) => {
     res.send('Welcome')

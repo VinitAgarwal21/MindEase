@@ -32,6 +32,7 @@ export const createAppointment = async (req, res) => {
     }
 
     const appt = new Appointment({
+      userId: req.userId || undefined,
       therapistId: therapistId || undefined,
       therapistName,
       userName,
@@ -55,6 +56,7 @@ export const getAppointments = async (req, res) => {
   try {
     // Optionally pass query ?status=pending
     const filter = {};
+    if (req.userId) filter.userId = req.userId;
     if (req.query.status) filter.status = req.query.status;
     const list = await Appointment.find(filter).sort({ createdAt: -1 }).limit(500);
     return res.json({ success: true, appointments: list });
