@@ -1,9 +1,15 @@
 import { useParams, Link } from "react-router-dom";
 import therapists from "../data/therapists";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const TherapistDetail = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const therapist = therapists.find((t) => t.id === Number(id));
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
+  console.log(therapist);
 
   if (!therapist) {
     return (
@@ -12,6 +18,42 @@ const TherapistDetail = () => {
       </div>
     );
   }
+
+  const handleBooking = async (e) => {
+    e.preventDefault();
+    setMessage("");
+    setLoading(true);
+
+    const form = e.target;
+    const payload = {
+      therapistId: therapist._id || undefined, // if your therapists are only static, omit or set to null
+      therapistName: therapist.name,
+      userName: form.name.value,
+      userEmail: form.email.value,
+      preferredDate: form.date.value,
+      preferredTime: form.time.value,
+      note: form.note?.value || "",
+      sessionFee: therapist.price || 0,
+    };
+
+    try {
+      const res = await fetch("http://localhost:5000/api/appointments", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Booking failed");
+      setMessage("Booking submitted — you'll receive a confirmation email soon.");
+      form.reset();
+    } catch (err) {
+      console.error(err);
+      setMessage("Failed to book: " + err.message);
+    } finally {
+      setLoading(false);
+      navigate("/therapist"); 
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 flex justify-center items-start py-10">
@@ -57,7 +99,7 @@ const TherapistDetail = () => {
           <h2 className="text-xl font-semibold mb-4 text-gray-800">
             Book an Appointment
           </h2>
-          <form className="space-y-5">
+          <form className="space-y-5" onSubmit={handleBooking}>
             <div className="flex flex-col gap-1">
               <label htmlFor="name" className="text-base font-medium text-gray-700">
                 Your Name
@@ -118,10 +160,11 @@ const TherapistDetail = () => {
                 Session Fee: ₹{therapist.price}
               </p>
               <button
+                disabled={loading}
                 type="submit"
                 className="px-8 py-2.5 bg-indigo-500 text-white font-medium rounded-lg hover:bg-indigo-600 transition"
               >
-                Book Appointment
+                {loading ? "Booking..." : "Book Appointment"}
               </button>
             </div>
           </form>
