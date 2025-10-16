@@ -7,6 +7,7 @@ import TherapistDetail from "./pages/TherapistDetail";
 import Therapists from "./pages/Therapists";
 import Auth from "./pages/Auth";
 import UserProfile from "./pages/UserProfile";
+import JournalWrite from "./pages/JournalWrite";
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
         <Route path="/therapist/:id" element={<TherapistDetail />} />
         <Route path="/auth" element={<Auth />} />
         <Route path="/user/:id" element={<UserProfile />} />
+        <Route path="/journalwrite" element={<JournalWrite />} />
       </Route>
     </Routes>
   );

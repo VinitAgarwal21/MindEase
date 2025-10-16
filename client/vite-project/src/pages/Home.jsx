@@ -68,7 +68,7 @@ export default function Home() {
 
         {/* CTAs */}
         <div className="flex justify-center gap-4">
-          <Link to="/dashboard">
+          <Link to="/journalwrite">
             <Button className="px-8 py-6 rounded-full flex items-center gap-2 bg-mindease-500 text-white hover:bg-mindease-600">
               Start Writing <ChevronRight className="h-5 w-5" />
             </Button>
