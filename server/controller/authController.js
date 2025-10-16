@@ -32,7 +32,7 @@ export const registerUser = async (req, res) => {
                 user: user._id, // Link to the User document
                 name: user.name,
                 specialization: specialization || [], // Use data from request or default
-                bio: bio || ""
+                bio: bio || "" ,
             });
             console.log("Profile for therapist created successfully")
         }

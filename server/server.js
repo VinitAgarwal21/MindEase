@@ -6,6 +6,7 @@ import cors from "cors";
 import authRoutes from "./routes/authRoutes.js";
 import journalRoutes from "./routes/journalRoutes.js";
 import therapistRoutes from "./routes/therapistRoutes.js";
+import appointmentRoutes from "./routes/appointmentRoutes.js";
 
 dotenv.config({});
 connectDB();
@@ -29,6 +30,7 @@ const PORT = 5000;
 app.use("/api/auth", authRoutes);
 app.use("/api/journals", journalRoutes);
 app.use("/api/therapists", therapistRoutes);
+app.use("/api/appointments", appointmentRoutes);
 
 
 app.get('/', (req, res) => {
