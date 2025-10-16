@@ -61,7 +61,7 @@ const TherapistDetail = () => {
         {/* Back Button */}
         <Link
           to="/therapist"
-          className="inline-block mb-6 text-indigo-600 hover:text-indigo-800 font-medium"
+          className="inline-block mb-6 text-mindease-500 hover:text-mindease-700 font-medium"
         >
           ← Back to Therapists
         </Link>
@@ -75,7 +75,7 @@ const TherapistDetail = () => {
           />
           <div className="flex flex-col justify-center space-y-1 text-center md:text-left">
             <h1 className="text-3xl font-semibold text-gray-800">{therapist.name}</h1>
-            <p className="text-indigo-600 text-lg font-medium">
+            <p className="text-mindease-600 text-lg font-medium">
               {therapist.specialization}
             </p>
             <p className="text-gray-600">Experience: {therapist.experience}</p>
@@ -108,7 +108,7 @@ const TherapistDetail = () => {
                 id="name"
                 type="text"
                 placeholder="Enter your full name"
-                className="outline-none py-2.5 px-3 rounded border border-gray-400 focus:ring-2 focus:ring-indigo-400"
+                className="outline-none py-2.5 px-3 rounded border border-gray-400 focus:ring-2 focus:ring-mindease-400"
                 required
               />
             </div>
@@ -121,7 +121,7 @@ const TherapistDetail = () => {
                 id="email"
                 type="email"
                 placeholder="Enter your email"
-                className="outline-none py-2.5 px-3 rounded border border-gray-400 focus:ring-2 focus:ring-indigo-400"
+                className="outline-none py-2.5 px-3 rounded border border-gray-400 focus:ring-2 focus:ring-mindease-400"
                 required
               />
             </div>
@@ -133,7 +133,7 @@ const TherapistDetail = () => {
               <input
                 id="date"
                 type="date"
-                className="outline-none py-2.5 px-3 rounded border border-gray-400 focus:ring-2 focus:ring-indigo-400"
+                className="outline-none py-2.5 px-3 rounded border border-gray-400 focus:ring-2 focus:ring-mindease-400"
                 required
               />
             </div>
@@ -144,7 +144,7 @@ const TherapistDetail = () => {
               </label>
               <select
                 id="time"
-                className="outline-none py-2.5 px-3 rounded border border-gray-400 focus:ring-2 focus:ring-indigo-400"
+                className="outline-none py-2.5 px-3 rounded border border-gray-400 focus:ring-2 focus:ring-mindease-400"
                 required
               >
                 <option value="">Select time slot</option>
@@ -162,7 +162,7 @@ const TherapistDetail = () => {
               <button
                 disabled={loading}
                 type="submit"
-                className="px-8 py-2.5 bg-indigo-500 text-white font-medium rounded-lg hover:bg-indigo-600 transition"
+                className="px-8 py-2.5 bg-mindease-500 text-white font-medium rounded-lg hover:bg-mindease-600 transition"
               >
                 {loading ? "Booking..." : "Book Appointment"}
               </button>
@@ -172,9 +172,9 @@ const TherapistDetail = () => {
 
         {/* Footer Note */}
         <div className="text-center text-gray-500 text-sm mt-6">
-          <p>
+          {/* <p>
             You’ll receive a confirmation email with your session details after booking.
-          </p>
+          </p> */}
         </div>
       </div>
     </div>

@@ -4,7 +4,7 @@ import therapists from "../data/therapists";
 function Therapists() {
   return (
     <div className="p-10 bg-gray-50 min-h-screen">
-      <h1 className="text-4xl font-bold mb-8 text-blue-700">Our Therapists</h1>
+      <h1 className="text-4xl font-bold mb-8 text-mindease-600">Our Therapists</h1>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {therapists.map((t) => (
@@ -23,12 +23,12 @@ function Therapists() {
               <p className="text-sm mt-2 text-gray-700">
                 {t.experience} experience
               </p>
-              <p className="text-sm text-blue-600 mt-2">
+              <p className="text-sm text-mindease-600 mt-2">
                 ₹{t.price} / session ({t.sessionTime})
               </p>
               <Link
                 to={`/therapist/${t.id}`}
-                className="mt-4 inline-block bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+                className="mt-4 inline-block bg-mindease-500 text-white px-4 py-2 rounded-lg hover:bg-mindease-600 transition"
               >
                 View Details
               </Link>

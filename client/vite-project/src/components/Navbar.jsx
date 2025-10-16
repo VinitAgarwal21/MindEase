@@ -7,10 +7,19 @@ export default function Navbar() {
   const { user, logout } = useAuth();
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
+  console.log("Navbar user:", user);
 
   const handleLogout = () => {
     logout();
     navigate("/auth");
+  };
+  const handleProfileClick = () => {
+    setOpen(false); // close dropdown
+    if (user) {
+      navigate(`/user/${user.id}`);
+    } else {
+      navigate("/auth");
+    }
   };
 
   return (
@@ -56,9 +65,12 @@ export default function Navbar() {
 
               {open && (
                 <div className="absolute right-0 mt-2 w-40 bg-white shadow-lg rounded-lg border py-2">
-                  <p className="px-4 py-2 text-sm text-gray-700 border-b">
-                    {user.name || "User"}
-                  </p>
+                  <button
+                    onClick={handleProfileClick}
+                    className="px-4 py-2 text-sm text-gray-700 border-b w-full text-left hover:bg-gray-100"
+                  >
+                    {user.name || "Profile"}
+                  </button>
                   <button
                     onClick={handleLogout}
                     className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
