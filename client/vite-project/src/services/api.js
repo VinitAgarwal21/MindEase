@@ -1,9 +1,9 @@
 // src/services/api.js
-const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5000";
+// const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5000";
 
 export async function sendTherapyMessage(text, history = []) {
   try {
-    const res = await fetch(`${API_BASE}/api/ai/therapy`, {
+    const res = await fetch(`http://localhost:5000/api/ai/therapy`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ message: text, history }), // server can accept history or ignore
