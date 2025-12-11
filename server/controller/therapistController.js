@@ -6,6 +6,9 @@ export const getAllTherapists = async (req, res) => {
     try {
         const therapists = await Therapist.find().select("-password").sort({ createdAt: -1 });
         console.log("Found therapists:", therapists.length);
+        therapists.forEach(t => {
+            console.log(`- ${t.name}: headline=${t.headline}, experience=${t.experience}, hourlyRate=${t.hourlyRate}, specialization=${t.specialization}`);
+        });
         res.json(therapists);
     } catch (err) {
         console.error("Get all therapists error:", err);
@@ -36,7 +39,7 @@ export const updateTherapistProfile = async (req, res) => {
         }
 
         const updateFields = req.body;
-
+        console.log("Received update fields:", updateFields);
         console.log("Looking for therapist with user ID:", req.user.id);
         
         let therapistProfile = await Therapist.findOne({ user: req.user.id });
@@ -55,6 +58,7 @@ export const updateTherapistProfile = async (req, res) => {
                 name: user.name,
                 ...updateFields
             });
+            console.log("✓ Created new therapist profile:", therapistProfile);
         } else {
             // Update existing profile
             therapistProfile = await Therapist.findOneAndUpdate(
@@ -62,6 +66,7 @@ export const updateTherapistProfile = async (req, res) => {
                 updateFields,
                 { new: true, runValidators: true }
             );
+            console.log("✓ Updated therapist profile:", therapistProfile);
         }
 
         res.json({

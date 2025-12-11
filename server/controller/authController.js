@@ -29,15 +29,17 @@ export const registerUser = async (req, res) => {
 
         if (user.role === 'therapist') {
             try {
+                console.log("Creating therapist profile for user:", user._id, user.name);
                 const therapistProfile = await Therapist.create({
                     user: user._id, // Link to the User document
                     name: user.name,
                     specialization: specialization || [], // Use data from request or default
                     bio: bio || "" ,
                 });
-                console.log("Profile for therapist created successfully", therapistProfile._id);
+                console.log("✓ Profile for therapist created successfully", therapistProfile._id);
             } catch (therapistError) {
-                console.error("Failed to create therapist profile:", therapistError.message);
+                console.error("✗ Failed to create therapist profile:", therapistError.message);
+                console.error("Full error:", therapistError);
                 // Continue with registration even if therapist profile creation fails
                 // They can complete onboarding later
             }

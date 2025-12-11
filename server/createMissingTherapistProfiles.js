@@ -7,7 +7,7 @@ dotenv.config();
 
 (async () => {
   try {
-    await mongoose.connect(process.env.MONGODB_URI || "mongodb://localhost:27017/test");
+    await mongoose.connect(process.env.MONGO_URI || "mongodb://localhost:27017/test");
     console.log("Connected to MongoDB");
 
     // Find all users with role 'therapist'

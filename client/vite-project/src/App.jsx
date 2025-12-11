@@ -8,6 +8,7 @@ import Therapists from "./pages/Therapists";
 import Auth from "./pages/Auth";
 import UserProfile from "./pages/UserProfile";
 import JournalWrite from "./pages/JournalWrite";
+import EmotionPredictor from "./pages/EmotionPredictor";
 import TherapistOnboarding from "./pages/TherapistOnboarding";
 import TherapistAppointments from "./pages/TherapistAppointments";
 import TherapistProfileEdit from "./pages/TherapistProfileEdit";
@@ -27,6 +28,7 @@ function App() {
         <Route path="/auth" element={<Auth />} />
         <Route path="/user/:id" element={<UserProfile />} />
         <Route path="/journalwrite" element={<JournalWrite />} />
+        <Route path="/emotionpredictor" element={<EmotionPredictor />} />
       </Route>
     </Routes>
   );

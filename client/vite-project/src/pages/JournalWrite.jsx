@@ -8,11 +8,8 @@ import { Loader2 } from "lucide-react";
 import "react-quill-new/dist/quill.snow.css";
 import { useNavigate } from "react-router-dom";
 
-// ✅ Load ReactQuill lazily for Vite (not Next.js)
 const ReactQuill = lazy(() => import("react-quill-new"));
 
-
-// ✅ Zod validation schema
 const journalSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters"),
   mood: z.string().min(1, "Please select a mood"),
@@ -20,7 +17,6 @@ const journalSchema = z.object({
   collection: z.string().optional(),
 });
 
-// ✅ Mock moods
 const MOODS = [
   { id: "happy", label: "😊 Happy" },
   { id: "sad", label: "😔 Sad" },
@@ -48,80 +44,83 @@ const JournalWrite = () => {
     },
   });
 
- const onSubmit = async (data) => {
-  setLoading(true);
-  try {
-    const res = await fetch("http://localhost:5000/api/journals/publish", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
-    if (!res.ok) throw new Error("Failed to publish");
-    toast.success("Journal published successfully!");
-    reset();
-  } catch (err) {
-    toast.error(err.message || "Something went wrong!");
-  } finally {
-    setLoading(false);
-    navigate("/");
-  }
-};
+  const onSubmit = async (data) => {
+    setLoading(true);
+    try {
+      const res = await fetch("http://localhost:5000/api/journals/publish", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error("Failed to publish");
+      toast.success("Journal published successfully!");
+      reset();
+    } catch (err) {
+      toast.error(err.message || "Something went wrong!");
+    } finally {
+      setLoading(false);
+      navigate("/");
+    }
+  };
 
-const handleSaveDraft = async (data) => {
-  if (!isDirty) return toast.error("No changes to save!");
-  setIsDraftSaving(true);
-  try {
-    const res = await fetch("http://localhost:5000/api/journals/draft", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
-    if (!res.ok) throw new Error("Failed to save draft");
-    toast.success("Draft saved!");
-  } catch (err) {
-    toast.error(err.message || "Failed to save draft!");
-  } finally {
-    setIsDraftSaving(false);
-  }
-};
-
+  const handleSaveDraft = async (data) => {
+    if (!isDirty) return toast.error("No changes to save!");
+    setIsDraftSaving(true);
+    try {
+      const res = await fetch("http://localhost:5000/api/journals/draft", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error("Failed to save draft");
+      toast.success("Draft saved!");
+    } catch (err) {
+      toast.error(err.message || "Failed to save draft!");
+    } finally {
+      setIsDraftSaving(false);
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex justify-center py-10">
-      <div className="bg-white shadow-lg rounded-2xl p-8 w-full max-w-3xl">
-        <h1 className="text-4xl font-bold text-gray-800 mb-8">
+    <div className="min-h-screen bg-gradient-to-b from-white-50 to-mindease-50 flex justify-center py-12 px-4">
+      <div className="bg-white/90 backdrop-blur-sm shadow-xl rounded-2xl p-10 w-full max-w-3xl border border-mindease-100">
+        <h1 className="text-4xl font-bold text-gray-800 mb-10 text-center">
           What’s on your mind today?
         </h1>
 
-        {loading && <BarLoader color="#3B82F6" width="100%" />}
+        {loading && <BarLoader color="#6366F1" width="100%" />}
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-7">
           {/* Title */}
           <div>
-            <label className="text-sm font-medium">Title</label>
+            <label className="text-sm font-medium text-gray-700">
+              Title
+            </label>
             <input
               {...register("title")}
               placeholder="Give your journal a title..."
-              className={`w-full border rounded-lg p-3 mt-1 focus:ring-2 focus:ring-blue-400 ${
-                errors.title ? "border-red-500" : "border-gray-300"
+              className={`w-full border rounded-xl p-3.5 mt-1 bg-gray-50 focus:ring-2 focus:ring-mindease-400 focus:bg-white transition-all ${
+                errors.title ? "border-red-400" : "border-gray-300"
               }`}
             />
             {errors.title && (
-              <p className="text-red-500 text-sm">{errors.title.message}</p>
+              <p className="text-red-500 text-sm mt-1">{errors.title.message}</p>
             )}
           </div>
 
           {/* Mood */}
           <div>
-            <label className="text-sm font-medium">How are you feeling?</label>
+            <label className="text-sm font-medium text-gray-700">
+              How are you feeling?
+            </label>
             <Controller
               control={control}
               name="mood"
               render={({ field }) => (
                 <select
                   {...field}
-                  className={`w-full border rounded-lg p-3 mt-1 focus:ring-2 focus:ring-blue-400 ${
-                    errors.mood ? "border-red-500" : "border-gray-300"
+                  className={`w-full border rounded-xl p-3.5 mt-1 bg-gray-50 focus:ring-2 focus:ring-mindease-400 focus:bg-white transition-all ${
+                    errors.mood ? "border-red-400" : "border-gray-300"
                   }`}
                 >
                   <option value="">Select a mood...</option>
@@ -134,52 +133,56 @@ const handleSaveDraft = async (data) => {
               )}
             />
             {errors.mood && (
-              <p className="text-red-500 text-sm">{errors.mood.message}</p>
+              <p className="text-red-500 text-sm mt-1">{errors.mood.message}</p>
             )}
           </div>
 
           {/* Content */}
           <div>
-            <label className="text-sm font-medium">Write your thoughts</label>
+            <label className="text-sm font-medium text-gray-700">
+              Write your thoughts
+            </label>
             <Controller
               control={control}
               name="content"
               render={({ field }) => (
                 <Suspense fallback={<div>Loading editor...</div>}>
-                  <ReactQuill
-                    theme="snow"
-                    value={field.value}
-                    onChange={field.onChange}
-                    readOnly={loading}
-                    className="mt-2"
-                  />
+                  <div className="mt-2 border border-gray-300 rounded-xl overflow-hidden shadow-sm focus-within:ring-2 focus-within:ring-mindease-400 transition-all">
+                    <ReactQuill
+                      theme="snow"
+                      value={field.value}
+                      onChange={field.onChange}
+                      readOnly={loading}
+                      className="min-h-[250px] max-h-[500px] bg-white"
+                    />
+                  </div>
                 </Suspense>
               )}
             />
             {errors.content && (
-              <p className="text-red-500 text-sm">{errors.content.message}</p>
+              <p className="text-red-500 text-sm mt-1">{errors.content.message}</p>
             )}
           </div>
 
           {/* Collection */}
           <div>
-            <label className="text-sm font-medium">
+            <label className="text-sm font-medium text-gray-700">
               Add to Collection (optional)
             </label>
             <input
               {...register("collection")}
               placeholder="Collection name..."
-              className="w-full border rounded-lg p-3 mt-1 focus:ring-2 focus:ring-blue-400 border-gray-300"
+              className="w-full border rounded-xl p-3.5 mt-1 bg-gray-50 focus:ring-2 focus:ring-mindease-400 focus:bg-white border-gray-300 transition-all"
             />
           </div>
 
           {/* Buttons */}
-          <div className="flex justify-between items-center">
+          <div className="flex justify-between items-center pt-4">
             <button
               type="button"
               onClick={handleSubmit(handleSaveDraft)}
               disabled={isDraftSaving || !isDirty}
-              className="px-5 py-2.5 border rounded-lg text-gray-700 hover:bg-gray-100 flex items-center"
+              className="px-6 py-2.5 border border-mindease-200 text-mindease-700 rounded-xl hover:bg-mindease-50 flex items-center transition-all disabled:opacity-50"
             >
               {isDraftSaving && (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -190,7 +193,7 @@ const handleSaveDraft = async (data) => {
             <button
               type="submit"
               disabled={loading || !isDirty}
-              className="px-6 py-2.5 bg-mindease-600 text-white rounded-lg hover:bg-mindease-700 flex items-center"
+              className="px-7 py-2.5 bg-mindease-600 text-white rounded-xl hover:bg-mindease-700 shadow-md flex items-center transition-all disabled:opacity-50"
             >
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Publish

@@ -12,6 +12,7 @@ import mongoose from "mongoose";
 export const createAppointment = async (req, res) => {
   try {
     const {
+      userId,
       therapistId,
       therapistName,
       userName,
@@ -32,8 +33,10 @@ export const createAppointment = async (req, res) => {
       return res.status(400).json({ error: "Invalid therapistId" });
     }
 
+    console.log("Creating appointment:", { userId, therapistId, therapistName, userName, userEmail, preferredDate, preferredTime });
+
     const appt = new Appointment({
-      userId: req.userId || undefined,
+      userId: userId || undefined,
       therapistId: therapistId || undefined,
       therapistName,
       userName,
@@ -46,6 +49,7 @@ export const createAppointment = async (req, res) => {
     });
 
     await appt.save();
+    console.log("✓ Appointment created:", appt._id);
     return res.status(201).json({ success: true, appointment: appt });
   } catch (err) {
     console.error("createAppointment error:", err);
@@ -55,11 +59,13 @@ export const createAppointment = async (req, res) => {
 
 export const getAppointments = async (req, res) => {
   try {
-    // Optionally pass query ?status=pending
+    // Optionally pass query ?status=pending or ?userId=xxx
     const filter = {};
-    if (req.userId) filter.userId = req.userId;
+    if (req.query.userId) filter.userId = req.query.userId;
     if (req.query.status) filter.status = req.query.status;
+    console.log("Fetching appointments with filter:", filter);
     const list = await Appointment.find(filter).sort({ createdAt: -1 }).limit(500);
+    console.log(`Found ${list.length} appointments`);
     return res.json({ success: true, appointments: list });
   } catch (err) {
     console.error("getAppointments error:", err);
