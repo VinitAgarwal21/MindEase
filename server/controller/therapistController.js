@@ -1,9 +1,14 @@
 import { Therapist } from "../models/Therapist.js";
+import { User } from "../models/User.js";
 
 // Get all therapists (public)
 export const getAllTherapists = async (req, res) => {
     try {
         const therapists = await Therapist.find().select("-password").sort({ createdAt: -1 });
+        console.log("Found therapists:", therapists.length);
+        therapists.forEach(t => {
+            console.log(`- ${t.name}: headline=${t.headline}, experience=${t.experience}, hourlyRate=${t.hourlyRate}, specialization=${t.specialization}`);
+        });
         res.json(therapists);
     } catch (err) {
         console.error("Get all therapists error:", err);
@@ -34,22 +39,61 @@ export const updateTherapistProfile = async (req, res) => {
         }
 
         const updateFields = req.body;
-
-        const therapistProfile = await Therapist.findOneAndUpdate(
-            { user: req.user.id },
-            updateFields,
-            { new: true, runValidators: true }
-        ).select("-password");
-
+        console.log("Received update fields:", updateFields);
+        console.log("Looking for therapist with user ID:", req.user.id);
+        
+        let therapistProfile = await Therapist.findOne({ user: req.user.id });
+        
         if (!therapistProfile) {
-            return res.status(404).json({ message: "Therapist not found" });
+            console.log("Therapist profile not found, creating one...");
+            // Fetch user to get the name
+            const user = await User.findById(req.user.id);
+            if (!user) {
+                return res.status(404).json({ message: "User not found" });
+            }
+            
+            // If therapist profile doesn't exist, create it
+            therapistProfile = await Therapist.create({
+                user: req.user.id,
+                name: user.name,
+                ...updateFields
+            });
+            console.log("✓ Created new therapist profile:", therapistProfile);
+        } else {
+            // Update existing profile
+            therapistProfile = await Therapist.findOneAndUpdate(
+                { user: req.user.id },
+                updateFields,
+                { new: true, runValidators: true }
+            );
+            console.log("✓ Updated therapist profile:", therapistProfile);
         }
+
         res.json({
             message: "Profile updated successfully!",
             profile: therapistProfile
         });
     } catch (err) {
         console.error("Update therapist profile error:", err);
+        res.status(500).json({ message: "Server error", error: err.message });
+    }
+};
+
+// Get my therapist profile (protected)
+export const getMyProfile = async (req, res) => {
+    try {
+        if (req.user.role !== "therapist") {
+            return res.status(403).json({ message: "Access denied. Only therapists can access this." });
+        }
+
+        const therapistProfile = await Therapist.findOne({ user: req.user.id });
+        
+        res.json({
+            success: true,
+            profile: therapistProfile
+        });
+    } catch (err) {
+        console.error("Get my profile error:", err);
         res.status(500).json({ message: "Server error" });
     }
 };

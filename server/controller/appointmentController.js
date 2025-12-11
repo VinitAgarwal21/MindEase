@@ -1,4 +1,5 @@
 import { Appointment } from "../models/Appointment.js";
+import { Therapist } from "../models/Therapist.js";
 import mongoose from "mongoose";
 
 /**
@@ -11,6 +12,7 @@ import mongoose from "mongoose";
 export const createAppointment = async (req, res) => {
   try {
     const {
+      userId,
       therapistId,
       therapistName,
       userName,
@@ -31,8 +33,10 @@ export const createAppointment = async (req, res) => {
       return res.status(400).json({ error: "Invalid therapistId" });
     }
 
+    console.log("Creating appointment:", { userId, therapistId, therapistName, userName, userEmail, preferredDate, preferredTime });
+
     const appt = new Appointment({
-      userId: req.userId || undefined,
+      userId: userId || undefined,
       therapistId: therapistId || undefined,
       therapistName,
       userName,
@@ -45,6 +49,7 @@ export const createAppointment = async (req, res) => {
     });
 
     await appt.save();
+    console.log("✓ Appointment created:", appt._id);
     return res.status(201).json({ success: true, appointment: appt });
   } catch (err) {
     console.error("createAppointment error:", err);
@@ -54,11 +59,13 @@ export const createAppointment = async (req, res) => {
 
 export const getAppointments = async (req, res) => {
   try {
-    // Optionally pass query ?status=pending
+    // Optionally pass query ?status=pending or ?userId=xxx
     const filter = {};
-    if (req.userId) filter.userId = req.userId;
+    if (req.query.userId) filter.userId = req.query.userId;
     if (req.query.status) filter.status = req.query.status;
+    console.log("Fetching appointments with filter:", filter);
     const list = await Appointment.find(filter).sort({ createdAt: -1 }).limit(500);
+    console.log(`Found ${list.length} appointments`);
     return res.json({ success: true, appointments: list });
   } catch (err) {
     console.error("getAppointments error:", err);
@@ -95,6 +102,59 @@ export const updateAppointment = async (req, res) => {
     return res.json({ success: true, appointment: appt });
   } catch (err) {
     console.error("updateAppointment error:", err);
+    return res.status(500).json({ error: "Server error" });
+  }
+};
+
+/**
+ * Get all appointments for a specific therapist
+ * GET /api/appointments/therapist/:therapistId?status=pending
+ */
+export const getTherapistAppointments = async (req, res) => {
+  try {
+    const { therapistId } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(therapistId)) {
+      return res.status(400).json({ error: "Invalid therapistId" });
+    }
+
+    const filter = { therapistId };
+    if (req.query.status) filter.status = req.query.status;
+
+    const appointments = await Appointment.find(filter)
+      .populate("userId", "name email")
+      .sort({ createdAt: -1 })
+      .limit(500);
+
+    return res.json({ success: true, appointments });
+  } catch (err) {
+    console.error("getTherapistAppointments error:", err);
+    return res.status(500).json({ error: "Server error" });
+  }
+};
+
+/**
+ * Get appointments for the logged-in therapist (by user ID)
+ * GET /api/appointments/my-appointments?status=pending
+ */
+export const getMyTherapistAppointments = async (req, res) => {
+  try {
+    // Find the therapist profile for this user
+    const therapist = await Therapist.findOne({ user: req.user.id });
+    if (!therapist) {
+      return res.status(404).json({ error: "Therapist profile not found" });
+    }
+
+    const filter = { therapistId: therapist._id };
+    if (req.query.status) filter.status = req.query.status;
+
+    const appointments = await Appointment.find(filter)
+      .populate("userId", "name email")
+      .sort({ createdAt: -1 })
+      .limit(500);
+
+    return res.json({ success: true, appointments });
+  } catch (err) {
+    console.error("getMyTherapistAppointments error:", err);
     return res.status(500).json({ error: "Server error" });
   }
 };

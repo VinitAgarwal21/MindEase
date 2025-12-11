@@ -1,15 +1,43 @@
 import { useParams, Link } from "react-router-dom";
-import therapists from "../data/therapists";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 const TherapistDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const therapist = therapists.find((t) => t.id === Number(id));
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState("");
-  console.log(therapist);
+  const [therapist, setTherapist] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [bookingLoading, setBookingLoading] = useState(false);
+
+  useEffect(() => {
+    fetchTherapist();
+  }, [id]);
+
+  const fetchTherapist = async () => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/therapists/${id}`);
+      if (!response.ok) throw new Error("Therapist not found");
+      const data = await response.json();
+      setTherapist(data);
+    } catch (error) {
+      console.error("Fetch error:", error);
+      toast.error("Failed to load therapist details");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-mindease-300 border-t-mindease-600"></div>
+          <p className="text-mindease-600 mt-2">Loading therapist details...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!therapist) {
     return (
@@ -21,19 +49,18 @@ const TherapistDetail = () => {
 
   const handleBooking = async (e) => {
     e.preventDefault();
-    setMessage("");
-    setLoading(true);
+    setBookingLoading(true);
 
     const form = e.target;
     const payload = {
-      therapistId: therapist._id || undefined, // if your therapists are only static, omit or set to null
+      therapistId: therapist._id,
       therapistName: therapist.name,
       userName: form.name.value,
       userEmail: form.email.value,
       preferredDate: form.date.value,
       preferredTime: form.time.value,
       note: form.note?.value || "",
-      sessionFee: therapist.price || 0,
+      sessionFee: therapist.hourlyRate || 0,
     };
 
     try {
@@ -44,14 +71,14 @@ const TherapistDetail = () => {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Booking failed");
-      setMessage("Booking submitted — you'll receive a confirmation email soon.");
+      toast.success("Booking submitted — you'll receive a confirmation soon.");
       form.reset();
+      navigate("/therapist");
     } catch (err) {
       console.error(err);
-      setMessage("Failed to book: " + err.message);
+      toast.error("Failed to book: " + err.message);
     } finally {
-      setLoading(false);
-      navigate("/therapist"); 
+      setBookingLoading(false);
     }
   };
 
@@ -69,30 +96,40 @@ const TherapistDetail = () => {
         {/* Therapist Header */}
         <div className="flex flex-col md:flex-row gap-8 mb-8 items-center md:items-start">
           <img
-            src={therapist.image}
+            src={therapist.profilePicture || "https://randomuser.me/api/portraits/lego/1.jpg"}
             alt={therapist.name}
             className="w-40 h-40 rounded-2xl object-cover shadow-md"
           />
           <div className="flex flex-col justify-center space-y-1 text-center md:text-left">
             <h1 className="text-3xl font-semibold text-gray-800">{therapist.name}</h1>
-            <p className="text-mindease-600 text-lg font-medium">
-              {therapist.specialization}
-            </p>
-            <p className="text-gray-600">Experience: {therapist.experience}</p>
-            <p className="text-gray-600">
-              Session Duration: {therapist.sessionTime}
-            </p>
-            <p className="text-gray-700 text-lg font-semibold mt-1">
-              ₹{therapist.price}
-            </p>
+            {therapist.headline && (
+              <p className="text-mindease-600 text-lg font-medium">
+                {therapist.headline}
+              </p>
+            )}
+            {therapist.specialization?.length > 0 && (
+              <p className="text-gray-600">
+                Specialties: {therapist.specialization.join(", ")}
+              </p>
+            )}
+            {therapist.experience && (
+              <p className="text-gray-600">Experience: {therapist.experience} years</p>
+            )}
+            {therapist.hourlyRate && (
+              <p className="text-gray-700 text-lg font-semibold mt-1">
+                ${therapist.hourlyRate}/hour
+              </p>
+            )}
           </div>
         </div>
 
         {/* About Section */}
-        <div className="mb-10">
-          <h2 className="text-xl font-semibold mb-2 text-gray-800">About</h2>
-          <p className="text-gray-700 leading-relaxed">{therapist.description}</p>
-        </div>
+        {therapist.bio && (
+          <div className="mb-10">
+            <h2 className="text-xl font-semibold mb-2 text-gray-800">About</h2>
+            <p className="text-gray-700 leading-relaxed">{therapist.bio}</p>
+          </div>
+        )}
 
         {/* Booking Form */}
         <div className="bg-gray-100 rounded-2xl p-6">
@@ -157,14 +194,14 @@ const TherapistDetail = () => {
 
             <div className="flex justify-between items-center">
               <p className="text-lg font-semibold text-gray-700">
-                Session Fee: ₹{therapist.price}
+                Session Fee: ${therapist.hourlyRate || 0}
               </p>
               <button
-                disabled={loading}
+                disabled={bookingLoading}
                 type="submit"
-                className="px-8 py-2.5 bg-mindease-500 text-white font-medium rounded-lg hover:bg-mindease-600 transition"
+                className="px-8 py-2.5 bg-mindease-500 text-white font-medium rounded-lg hover:bg-mindease-600 transition disabled:opacity-50"
               >
-                {loading ? "Booking..." : "Book Appointment"}
+                {bookingLoading ? "Booking..." : "Book Appointment"}
               </button>
             </div>
           </form>

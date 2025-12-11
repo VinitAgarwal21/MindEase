@@ -34,8 +34,9 @@ const Auth = () => {
         formData
       );
       alert(data.message);
-      login(data.user, data.token);
-      navigate("/");
+      const isTherapist = data?.user?.role === "therapist" || (!isLogin && formData.role === "therapist");
+      login({ ...data.user, token: data.token });
+      navigate(isTherapist ? "/therapist/onboarding" : "/");
     } catch (error) {
       alert(error.response?.data?.message || "Something went wrong");
       console.error(error);
