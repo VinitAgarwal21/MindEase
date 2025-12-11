@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { ShieldCheck, CalendarCheck, FileText, Sparkles } from "lucide-react";
@@ -17,6 +17,7 @@ export default function TherapistOnboarding() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [form, setForm] = useState({
     headline: "",
     yearsExperience: "",
@@ -27,6 +28,43 @@ export default function TherapistOnboarding() {
   });
 
   const displayName = useMemo(() => user?.name || "Therapist", [user]);
+
+  useEffect(() => {
+    checkExistingProfile();
+  }, []);
+
+  const checkExistingProfile = async () => {
+    try {
+      const response = await fetch("http://localhost:5000/api/therapists/my-profile", {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.profile && (data.profile.bio || data.profile.headline)) {
+          // Profile already completed, redirect to appointments
+          toast.info("Profile already completed. Redirecting...");
+          navigate("/therapist/appointments");
+          return;
+        }
+      }
+    } catch (error) {
+      console.error("Check profile error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-mindease-300 border-t-mindease-600"></div>
+          <p className="text-mindease-600 mt-2">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   const toggleSpecialty = (item) => {
     setForm((prev) => {
@@ -52,12 +90,37 @@ export default function TherapistOnboarding() {
       return;
     }
     setSaving(true);
-    // Placeholder for API call to persist therapist profile details
-    setTimeout(() => {
-      toast.success("Therapist profile saved.");
+    
+    try {
+      const response = await fetch("http://localhost:5000/api/therapists/profile", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${user?.token || localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({
+          bio: form.bio,
+          specialization: form.specialties,
+          experience: form.yearsExperience ? parseInt(form.yearsExperience) : 0,
+          qualifications: form.licenseId,
+          hourlyRate: form.hourlyRate ? parseFloat(form.hourlyRate) : 0,
+          headline: form.headline,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Failed to save profile");
+      }
+
+      toast.success("Therapist profile saved successfully!");
+      navigate("/therapist/appointments");
+    } catch (error) {
+      console.error("Save error:", error);
+      toast.error(error.message || "Failed to save profile");
+    } finally {
       setSaving(false);
-      navigate("/therapistchat");
-    }, 800);
+    }
   };
 
   return (

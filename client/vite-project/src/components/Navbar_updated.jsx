@@ -13,6 +13,7 @@ export default function Navbar() {
     logout();
     navigate("/auth");
   };
+  
   const handleProfileClick = () => {
     setOpen(false); // close dropdown
     if (user) {

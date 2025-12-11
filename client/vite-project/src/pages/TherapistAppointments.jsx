@@ -19,7 +19,7 @@ const TherapistAppointments = () => {
     try {
       const query = filter !== "all" ? `?status=${filter}` : "";
       const response = await fetch(
-        `http://localhost:5000/api/appointments/therapist/${user?.id}${query}`,
+        `http://localhost:5000/api/appointments/my-appointments${query}`,
         {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         }

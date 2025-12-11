@@ -10,6 +10,7 @@ import UserProfile from "./pages/UserProfile";
 import JournalWrite from "./pages/JournalWrite";
 import TherapistOnboarding from "./pages/TherapistOnboarding";
 import TherapistAppointments from "./pages/TherapistAppointments";
+import TherapistProfileEdit from "./pages/TherapistProfileEdit";
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
              <Route path="/therapist" element={<Therapists />} />
         <Route path="/therapist/:id" element={<TherapistDetail />} />        <Route path="/therapist/onboarding" element={<TherapistOnboarding />} />
         <Route path="/therapist/appointments" element={<TherapistAppointments />} />
+        <Route path="/therapist/profile/edit" element={<TherapistProfileEdit />} />
         <Route path="/auth" element={<Auth />} />
         <Route path="/user/:id" element={<UserProfile />} />
         <Route path="/journalwrite" element={<JournalWrite />} />

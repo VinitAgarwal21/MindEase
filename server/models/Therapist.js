@@ -24,10 +24,12 @@ const therapistSchema = new mongoose.Schema({
     required: true,
     trim: true,
   },
+  headline: String,                 // Profile headline
   specialization: [String],        // E.g., ['Anxiety', 'Depression']
   qualifications: String,
   experience: Number,               // Years of experience
   bio: String,
+  hourlyRate: Number,               // Hourly rate in USD
   profilePicture: String,
   availableSlots: [
     {

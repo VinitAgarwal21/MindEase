@@ -1,4 +1,5 @@
 import { Appointment } from "../models/Appointment.js";
+import { Therapist } from "../models/Therapist.js";
 import mongoose from "mongoose";
 
 /**
@@ -121,6 +122,33 @@ export const getTherapistAppointments = async (req, res) => {
     return res.json({ success: true, appointments });
   } catch (err) {
     console.error("getTherapistAppointments error:", err);
+    return res.status(500).json({ error: "Server error" });
+  }
+};
+
+/**
+ * Get appointments for the logged-in therapist (by user ID)
+ * GET /api/appointments/my-appointments?status=pending
+ */
+export const getMyTherapistAppointments = async (req, res) => {
+  try {
+    // Find the therapist profile for this user
+    const therapist = await Therapist.findOne({ user: req.user.id });
+    if (!therapist) {
+      return res.status(404).json({ error: "Therapist profile not found" });
+    }
+
+    const filter = { therapistId: therapist._id };
+    if (req.query.status) filter.status = req.query.status;
+
+    const appointments = await Appointment.find(filter)
+      .populate("userId", "name email")
+      .sort({ createdAt: -1 })
+      .limit(500);
+
+    return res.json({ success: true, appointments });
+  } catch (err) {
+    console.error("getMyTherapistAppointments error:", err);
     return res.status(500).json({ error: "Server error" });
   }
 };

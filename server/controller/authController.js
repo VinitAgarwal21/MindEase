@@ -28,13 +28,19 @@ export const registerUser = async (req, res) => {
         });
 
         if (user.role === 'therapist') {
-            const therapistProfile = await Therapist.create({
-                user: user._id, // Link to the User document
-                name: user.name,
-                specialization: specialization || [], // Use data from request or default
-                bio: bio || "" ,
-            });
-            console.log("Profile for therapist created successfully")
+            try {
+                const therapistProfile = await Therapist.create({
+                    user: user._id, // Link to the User document
+                    name: user.name,
+                    specialization: specialization || [], // Use data from request or default
+                    bio: bio || "" ,
+                });
+                console.log("Profile for therapist created successfully", therapistProfile._id);
+            } catch (therapistError) {
+                console.error("Failed to create therapist profile:", therapistError.message);
+                // Continue with registration even if therapist profile creation fails
+                // They can complete onboarding later
+            }
         }
 
         // Create JWT
