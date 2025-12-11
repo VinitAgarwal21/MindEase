@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+
 
 /**
  * EmotionPredictor (with local frontend-only history)
@@ -10,6 +11,7 @@ export default function EmotionPredictor() {
   const [emotions, setEmotions] = useState(null);
   const [error, setError] = useState(null);
 
+  const API_BASE ="http://localhost:5000";
   // history: array of { text, emotions, time (ISO string) }
   const [history, setHistory] = useState([]);
 
@@ -37,11 +39,107 @@ export default function EmotionPredictor() {
   function formatDate(iso) {
     try {
       const d = new Date(iso);
+      console.log("formatDate input:", iso, "parsed date:", d);
       return d.toLocaleString();
     } catch {
       return iso;
     }
   }
+
+   function authHeaders() {
+    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+    const headers = { "Content-Type": "application/json" };
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+    return headers;
+  }
+
+  function jsonHeaders() {
+    return { "Content-Type": "application/json" };
+  }
+
+
+//   async function fetchHistory() {
+//     setError(null);
+//     try {
+//       const resp = await fetch(`${API_BASE}/api/journals`, {
+//         method: "GET",
+//         headers: authHeaders(),
+//       });
+
+//       if (resp.status === 401) {
+//         setError("Not authenticated. Please login to load your history.");
+//         setHistory([]);
+//         return;
+//       }
+
+//       if (!resp.ok) {
+//         throw new Error("Failed to load history: " + resp.status);
+//       }
+
+//       const data = await resp.json();
+//       // normalize: ensure createdAt present for formatDate
+//       setHistory(Array.isArray(data) ? data : []);
+//     } catch (err) {
+//       console.error("fetchHistory error:", err);
+//       setError(err.message || "Failed to fetch history");
+//     }
+//   }
+
+ // fetch all journals (public, no auth required)
+  async function fetchHistory() {
+    setError(null);
+    try {
+      const resp = await fetch(`${API_BASE}/api/journals/`, {
+        method: "GET",
+        headers: jsonHeaders(),
+      });
+
+      if (!resp.ok) {
+        throw new Error("Failed to load history: " + resp.status);
+      }
+
+      const data = await resp.json();
+      setHistory(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error("fetchHistory error:", err);
+      setError(err.message || "Failed to fetch history");
+    }
+  }
+
+  // inside render or after fetching
+console.log("sample createdAt:", history[0]?.createdAt, "type:", typeof history[0]?.createdAt);
+
+
+  // create journal in backend after prediction
+  async function createJournalBackend({ text, emotions }) {
+    try {
+      const resp = await fetch(`${API_BASE}/api/journals/`, {
+        method: "POST",
+        headers: jsonHeaders(),
+        body: JSON.stringify({ text, emotions }),
+      });
+
+      if (!resp.ok) {
+        const body = await resp.text().catch(() => null);
+        throw new Error("Failed to save journal: " + resp.status + (body ? ` - ${body}` : ""));
+      }
+
+      const saved = await resp.json();
+      // put saved item on top
+      setHistory((prev) => [saved, ...prev]);
+      return saved;
+    } catch (err) {
+      console.error("createJournalBackend error:", err);
+      setError(err.message || "Failed to save journal");
+      throw err;
+    }
+  }
+
+  useEffect(() => {
+    // load history on mount
+    fetchHistory();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function handlePredict() {
     if (!text.trim()) return;
@@ -65,15 +163,7 @@ export default function EmotionPredictor() {
       const detected = Array.isArray(data.emotions) ? data.emotions : [];
       setEmotions(detected);
 
-      // add to frontend-only history (most recent first)
-      const entry = {
-        text,
-        emotions: detected,
-        time: new Date().toISOString(),
-      };
-      setHistory((prev) => [entry, ...prev]);
-
-      // optionally: keep the input (or clear it). Current choice: keep it.
+     await createJournalBackend({ text, emotions: detected });
     } catch (err) {
       setError(err.message || "Unknown error");
     } finally {
@@ -94,8 +184,8 @@ export default function EmotionPredictor() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-white to-gray-50 p-6">
-      <div className="w-full max-w-2xl bg-white rounded-2xl shadow-lg p-6 sm:p-10 transition-all">
+    <div className="min-h-screen flex items-center justify-center ">
+      <div className="w-full max-w-5xl bg-white rounded-2xl shadow-lg p-6 sm:p-10 transition-all">
         <h2 className="text-2xl sm:text-3xl font-semibold mb-3 text-gray-900">
           Write down your thoughts...
         </h2>
@@ -188,7 +278,7 @@ export default function EmotionPredictor() {
                 <div key={idx} className="border border-gray-100 rounded-2xl p-4 bg-white shadow-sm">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
-                      <div className="text-xs text-gray-400 mb-1">{formatDate(item.time)}</div>
+                      {/* <div className="text-xs text-gray-400 mb-1">{formatDate(item.time)}</div> */}
 
                       {/* snippet */}
                       <div className="text-sm text-gray-800 mb-3 line-clamp-3">
