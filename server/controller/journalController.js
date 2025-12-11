@@ -1,36 +1,39 @@
 import {Journal} from "../models/Journal.js";
 
-// Create a new journal entry
+import mongoose from "mongoose";
+
 export const createJournal = async (req, res) => {
-    try {
-        const { title, content, mood, tags } = req.body;
+  try {
+    const { text, emotions } = req.body;
 
-        const journal = await Journal.create({
-            user: req.user.id, // from auth middleware
-            title,
-            content,
-            mood,
-            tags,
-            isPrivate
-        });
-
-        res.status(201).json(journal);
-    } catch (err) {
-        console.error("Create journal error:", err);
-        res.status(500).json({ message: "Server error" });
+    if (!text) {
+      return res.status(400).json({ message: "Text is required" });
     }
+
+    const journal = await Journal.create({
+      text,
+      emotions: Array.isArray(emotions) ? emotions : []
+    });
+
+    res.status(201).json(journal);
+  } catch (err) {
+    console.error("Create journal error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
 };
+
 
 // Get all journals of the logged-in user
-export const getUserJournals = async (req, res) => {
-    try {
-        const journals = await Journal.find({ user: req.user.id }).sort({ createdAt: -1 });
-        res.json(journals);
-    } catch (err) {
-        console.error("Get journals error:", err);
-        res.status(500).json({ message: "Server error" });
-    }
+export const getJournals = async (req, res) => {
+  try {
+    const journals = await Journal.find().sort({ createdAt: -1 });
+    res.json(journals);
+  } catch (err) {
+    console.error("Get journals error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
 };
+
 
 // Get a single journal by ID
 export const getJournalById = async (req, res) => {

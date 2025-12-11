@@ -2,11 +2,9 @@ import mongoose from "mongoose";
 
 const journalSchema = new mongoose.Schema(
   {
-    title: { type: String, required: true },
-    mood: { type: String, required: true },
-    content: { type: String, required: true },
-    collection: { type: String },
-    isDraft: { type: Boolean, default: false },
+    // user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    text: { type: String, required: true },
+    emotions: { type: [String], default: [] }
   },
   { timestamps: true }
 );
