@@ -5,12 +5,16 @@ import {
   getAppointments,
   getAppointment,
   updateAppointment,
+  getTherapistAppointments,
 } from "../controller/appointmentController.js";
 
 const router = express.Router();
 
 // POST /api/appointments          -> create
 router.post("/", createAppointment);
+
+// GET /api/appointments/therapist/:therapistId -> get therapist's appointments
+router.get("/therapist/:therapistId", getTherapistAppointments);
 
 // GET /api/appointments           -> list (optionally ?status=pending)
 router.get("/", getAppointments);

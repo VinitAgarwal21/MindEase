@@ -98,3 +98,29 @@ export const updateAppointment = async (req, res) => {
     return res.status(500).json({ error: "Server error" });
   }
 };
+
+/**
+ * Get all appointments for a specific therapist
+ * GET /api/appointments/therapist/:therapistId?status=pending
+ */
+export const getTherapistAppointments = async (req, res) => {
+  try {
+    const { therapistId } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(therapistId)) {
+      return res.status(400).json({ error: "Invalid therapistId" });
+    }
+
+    const filter = { therapistId };
+    if (req.query.status) filter.status = req.query.status;
+
+    const appointments = await Appointment.find(filter)
+      .populate("userId", "name email")
+      .sort({ createdAt: -1 })
+      .limit(500);
+
+    return res.json({ success: true, appointments });
+  } catch (err) {
+    console.error("getTherapistAppointments error:", err);
+    return res.status(500).json({ error: "Server error" });
+  }
+};
