@@ -11,6 +11,7 @@ export const createJournal = async (req, res) => {
     }
 
     const journal = await Journal.create({
+      user: req.user.id,
       text,
       emotions: Array.isArray(emotions) ? emotions : []
     });
@@ -26,7 +27,7 @@ export const createJournal = async (req, res) => {
 // Get all journals of the logged-in user
 export const getJournals = async (req, res) => {
   try {
-    const journals = await Journal.find().sort({ createdAt: -1 });
+    const journals = await Journal.find({ user: req.user.id }).sort({ createdAt: -1 });
     res.json(journals);
   } catch (err) {
     console.error("Get journals error:", err);

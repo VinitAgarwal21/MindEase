@@ -7,6 +7,7 @@ import { BarLoader } from "react-spinners";
 import { Loader2 } from "lucide-react";
 import "react-quill-new/dist/quill.snow.css";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext.jsx";
 
 const ReactQuill = lazy(() => import("react-quill-new"));
 
@@ -28,6 +29,7 @@ const JournalWrite = () => {
   const [loading, setLoading] = useState(false);
   const [isDraftSaving, setIsDraftSaving] = useState(false);
   const navigate = useNavigate();
+  const { getAuthToken } = useAuth();
   const {
     register,
     handleSubmit,
@@ -47,9 +49,13 @@ const JournalWrite = () => {
   const onSubmit = async (data) => {
     setLoading(true);
     try {
+      const token = await getAuthToken();
       const res = await fetch("http://localhost:5000/api/journals/publish", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify(data),
       });
       if (!res.ok) throw new Error("Failed to publish");
@@ -67,9 +73,13 @@ const JournalWrite = () => {
     if (!isDirty) return toast.error("No changes to save!");
     setIsDraftSaving(true);
     try {
+      const token = await getAuthToken();
       const res = await fetch("http://localhost:5000/api/journals/draft", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify(data),
       });
       if (!res.ok) throw new Error("Failed to save draft");

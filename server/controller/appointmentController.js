@@ -12,7 +12,6 @@ import mongoose from "mongoose";
 export const createAppointment = async (req, res) => {
   try {
     const {
-      userId,
       therapistId,
       therapistName,
       userName,
@@ -33,10 +32,13 @@ export const createAppointment = async (req, res) => {
       return res.status(400).json({ error: "Invalid therapistId" });
     }
 
+    // Always use the authenticated user's ID
+    const userId = req.user.id;
+
     console.log("Creating appointment:", { userId, therapistId, therapistName, userName, userEmail, preferredDate, preferredTime });
 
     const appt = new Appointment({
-      userId: userId || undefined,
+      userId,
       therapistId: therapistId || undefined,
       therapistName,
       userName,
@@ -45,7 +47,7 @@ export const createAppointment = async (req, res) => {
       preferredTime,
       note,
       sessionFee,
-      status: "pending", // explicit but model default covers it
+      status: "pending",
     });
 
     await appt.save();
@@ -59,12 +61,14 @@ export const createAppointment = async (req, res) => {
 
 export const getAppointments = async (req, res) => {
   try {
-    // Optionally pass query ?status=pending or ?userId=xxx
-    const filter = {};
-    if (req.query.userId) filter.userId = req.query.userId;
+    // Only return appointments belonging to the authenticated user
+    const filter = { userId: req.user.id };
     if (req.query.status) filter.status = req.query.status;
     console.log("Fetching appointments with filter:", filter);
-    const list = await Appointment.find(filter).sort({ createdAt: -1 }).limit(500);
+    const list = await Appointment.find(filter)
+      .populate("therapistId", "name specialization")
+      .sort({ createdAt: -1 })
+      .limit(500);
     console.log(`Found ${list.length} appointments`);
     return res.json({ success: true, appointments: list });
   } catch (err) {
@@ -78,7 +82,7 @@ export const getAppointment = async (req, res) => {
     const { id } = req.params;
     if (!mongoose.Types.ObjectId.isValid(id)) return res.status(400).json({ error: "Invalid id" });
 
-    const appt = await Appointment.findById(id);
+    const appt = await Appointment.findOne({ _id: id, userId: req.user.id });
     if (!appt) return res.status(404).json({ error: "Appointment not found" });
     return res.json({ success: true, appointment: appt });
   } catch (err) {
@@ -97,9 +101,26 @@ export const updateAppointment = async (req, res) => {
     const updates = req.body;
     if (!mongoose.Types.ObjectId.isValid(id)) return res.status(400).json({ error: "Invalid id" });
 
-    const appt = await Appointment.findByIdAndUpdate(id, updates, { new: true });
+    // Users can only update their own appointments; therapists can update appointments assigned to them
+    const appt = await Appointment.findById(id);
     if (!appt) return res.status(404).json({ error: "Appointment not found" });
-    return res.json({ success: true, appointment: appt });
+
+    const isOwner = appt.userId && appt.userId.toString() === req.user.id;
+    // Check if the authenticated user is the therapist for this appointment
+    let isTherapist = false;
+    if (appt.therapistId) {
+      const therapistProfile = await Therapist.findOne({ user: req.user.id });
+      if (therapistProfile && appt.therapistId.toString() === therapistProfile._id.toString()) {
+        isTherapist = true;
+      }
+    }
+
+    if (!isOwner && !isTherapist) {
+      return res.status(403).json({ error: "Not authorized to update this appointment" });
+    }
+
+    const updated = await Appointment.findByIdAndUpdate(id, updates, { new: true });
+    return res.json({ success: true, appointment: updated });
   } catch (err) {
     console.error("updateAppointment error:", err);
     return res.status(500).json({ error: "Server error" });

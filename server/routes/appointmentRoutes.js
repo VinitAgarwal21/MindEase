@@ -11,22 +11,23 @@ import {
 
 const router = express.Router();
 
+// All appointment routes require authentication
 // POST /api/appointments          -> create
-router.post("/", createAppointment);
+router.post("/", authMiddleware, createAppointment);
 
 // GET /api/appointments/my-appointments -> get logged-in therapist's appointments
 router.get("/my-appointments", authMiddleware, getMyTherapistAppointments);
 
 // GET /api/appointments/therapist/:therapistId -> get therapist's appointments
-router.get("/therapist/:therapistId", getTherapistAppointments);
+router.get("/therapist/:therapistId", authMiddleware, getTherapistAppointments);
 
-// GET /api/appointments           -> list (optionally ?status=pending)
-router.get("/", getAppointments);
+// GET /api/appointments           -> list (user's own appointments)
+router.get("/", authMiddleware, getAppointments);
 
-// GET /api/appointments/:id       -> get single
-router.get("/:id", getAppointment);
+// GET /api/appointments/:id       -> get single (user's own)
+router.get("/:id", authMiddleware, getAppointment);
 
 // PATCH /api/appointments/:id     -> update (e.g., change status)
-router.patch("/:id", updateAppointment);
+router.patch("/:id", authMiddleware, updateAppointment);
 
 export default router;

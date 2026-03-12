@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import { useAuth } from "../context/AuthContext.jsx";
 import {
   LineChart,
   Line,
@@ -13,7 +14,8 @@ import {
 } from "recharts";
 
 function UserProfile() {
-  const { id } = useParams(); // assuming route /user/:id
+  const { id } = useParams();
+  const { getAuthToken } = useAuth();
   const [user, setUser] = useState(null);
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -41,65 +43,31 @@ function moodLabel(score) {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const res = await fetch(`http://localhost:5000/api/users/${id}`);
+        const token = await getAuthToken();
+        const res = await fetch(`http://localhost:5000/api/users/${id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         const data = await res.json();
         if (data.success) {
           setUser(data.user);
           setAppointments(data.appointments);
+          // Journals are now returned by the server, scoped to this user
+          setJournals(data.journals || []);
+          setJournalsLoading(false);
         }
       } catch (err) {
         console.error(err);
+        setJournalError("Failed to load profile data");
+        setJournalsLoading(false);
       } finally {
         setLoading(false);
       }
     };
     fetchProfile();
-  }, [id]);
+  }, [id, getAuthToken]);
 
-  useEffect(() => {
-    // fetch journals and filter for this user (best-effort)
-    const fetchJournals = async () => {
-      setJournalError(null);
-      setJournalsLoading(true);
-      try {
-        const res = await fetch(`${API_BASE}/api/journals`);
-        if (!res.ok) throw new Error("Failed to load journals");
-        const data = await res.json();
-        if (!Array.isArray(data)) {
-          setJournals([]);
-          setJournalError("Unexpected journals response");
-          return;
-        }
-
-        // Best-effort filter:
-        const matched = data.filter((j) => {
-          // if user field exists and equals id
-          if (j.user && (String(j.user) === String(id) || (j.user._id && String(j.user._id) === String(id)))) return true;
-          // if explicit userId
-          if (j.userId && String(j.userId) === String(id)) return true;
-          // if user's email present and matches profile
-          if (user && j.userEmail && user.email && String(j.userEmail).toLowerCase() === String(user.email).toLowerCase()) return true;
-          // fallback: if backend stored user name and it equals profile name (less reliable)
-          if (user && j.userName && user.name && String(j.userName).toLowerCase() === String(user.name).toLowerCase()) return true;
-          return false;
-        });
-
-        // If we found matches for this user, use those; if none and the profile user is null (or backend is public demo),
-        // we can optionally display all journals or none. Here we'll show matched or (if none matched) show all journals as a fallback.
-        setJournals(matched.length > 0 ? matched : data);
-      } catch (err) {
-        console.error("fetchJournals error:", err);
-        setJournalError(err.message || "Failed to fetch journals");
-        setJournals([]);
-      } finally {
-        setJournalsLoading(false);
-      }
-    };
-
-    // only fetch journals after profile loads (so email/name matching works)
-    fetchJournals();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id, user]); // re-run when user is available
+  // Journals are now fetched along with the profile above — no separate fetch needed
+  // (server returns only this user's journals)
 
   // ---------------- Mood scoring + aggregation helpers ----------------
   // map common emotions to a numeric mood score scale 0 (very negative) -> 10 (very positive)

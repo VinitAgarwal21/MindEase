@@ -2,10 +2,12 @@ import { useParams, Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { useAuth } from "../context/AuthContext.jsx";
 
 const TherapistDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user, getAuthToken } = useAuth();
   const [therapist, setTherapist] = useState(null);
   const [loading, setLoading] = useState(true);
   const [bookingLoading, setBookingLoading] = useState(false);
@@ -64,9 +66,13 @@ const TherapistDetail = () => {
     };
 
     try {
+      const token = await getAuthToken();
       const res = await fetch("http://localhost:5000/api/appointments", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify(payload),
       });
       const data = await res.json();

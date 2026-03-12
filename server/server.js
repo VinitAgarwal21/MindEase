@@ -16,20 +16,20 @@ connectDB();
 
 const app = express();
 
-//middlewares
-app.use(express.json());
-app.use(cookieParser());
-app.use(urlencoded({ extended: true }));
-app.use(clerkMiddleware());
-
-// Configuring CORS
+// Configuring CORS — must come before clerkMiddleware so preflight requests succeed
 const corsOptions = {
     origin: '*',
     credentials: true
 }
 app.use(cors(corsOptions));
 
-const PORT = 5000;
+//middlewares
+app.use(express.json());
+app.use(cookieParser());
+app.use(urlencoded({ extended: true }));
+app.use(clerkMiddleware());
+
+const PORT = process.env.PORT || 5000;
 
 app.use("/api/auth", authRoutes);
 app.use("/api/journals", journalRoutes);
