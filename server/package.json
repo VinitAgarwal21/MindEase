@@ -10,6 +10,8 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
+    "@clerk/backend": "^3.2.0",
+    "@clerk/express": "^2.0.4",
     "@google/genai": "^1.25.0",
     "@google/generative-ai": "^0.24.1",
     "bcryptjs": "^3.0.2",

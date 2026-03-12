@@ -15,7 +15,7 @@ const SPECIALTIES = [
 
 export default function TherapistOnboarding() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, getAuthToken } = useAuth();
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
   const [form, setForm] = useState({
@@ -35,8 +35,10 @@ export default function TherapistOnboarding() {
 
   const checkExistingProfile = async () => {
     try {
+      const token = await getAuthToken();
+
       const response = await fetch("http://localhost:5000/api/therapists/my-profile", {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       if (response.ok) {
@@ -92,11 +94,13 @@ export default function TherapistOnboarding() {
     setSaving(true);
     
     try {
+      const token = await getAuthToken();
+
       const response = await fetch("http://localhost:5000/api/therapists/profile", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${user?.token || localStorage.getItem("token")}`,
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           bio: form.bio,

@@ -1,29 +1,57 @@
-import jwt from "jsonwebtoken";
-import dotenv from "dotenv";
+import { clerkClient, getAuth } from "@clerk/express";
+import { User } from "../models/User.js";
 
-dotenv.config();
+const getPrimaryEmail = (clerkUser) => {
+  const primary = clerkUser.emailAddresses?.find(
+    (email) => email.id === clerkUser.primaryEmailAddressId
+  );
+  return primary?.emailAddress || clerkUser.emailAddresses?.[0]?.emailAddress || "";
+};
 
-const authMiddleware = (req, res, next) => {
-  // Get token from the Authorization header: "Bearer <token>"
-  const authHeader = req.headers.authorization;
-
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return res.status(401).json({ message: "No token, authorization denied" });
-  }
-
-  const token = authHeader.split(" ")[1];
-
+const authMiddleware = async (req, res, next) => {
   try {
-    // Verify token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const auth = getAuth(req);
 
-    // Attach decoded user object to request
-    req.user = decoded;
+    if (!auth.userId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
 
-    // Continue to next middleware/controller
+    let user = await User.findOne({ clerkId: auth.userId });
+
+    if (!user) {
+      const clerkUser = await clerkClient.users.getUser(auth.userId);
+      const email = getPrimaryEmail(clerkUser);
+
+      if (!email) {
+        return res.status(401).json({ message: "Unable to resolve user email from Clerk" });
+      }
+
+      user = await User.findOne({ email });
+
+      if (!user) {
+        user = await User.create({
+          clerkId: auth.userId,
+          name: `${clerkUser.firstName || ""} ${clerkUser.lastName || ""}`.trim() || "User",
+          email,
+          role: clerkUser.publicMetadata?.role === "therapist" ? "therapist" : "user",
+        });
+      } else if (!user.clerkId) {
+        user.clerkId = auth.userId;
+        await user.save();
+      }
+    }
+
+    req.user = {
+      id: user._id.toString(),
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      clerkId: user.clerkId,
+    };
+
     next();
   } catch (err) {
-    console.error("JWT verification failed:", err.message);
+    console.error("Auth middleware failed:", err.message);
     return res.status(401).json({ message: "Token is not valid" });
   }
 };

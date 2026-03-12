@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import MainLayout from "./layouts/MainLayout";
 import Home from "./pages/Home";
 import VideosPage from "./pages/Videos";
@@ -12,6 +12,26 @@ import EmotionPredictor from "./pages/EmotionPredictor";
 import TherapistOnboarding from "./pages/TherapistOnboarding";
 import TherapistAppointments from "./pages/TherapistAppointments";
 import TherapistProfileEdit from "./pages/TherapistProfileEdit";
+import { useAuth } from "./context/AuthContext";
+
+function RequireAuth({ children }) {
+  const { user, isAuthReady } = useAuth();
+
+  if (!isAuthReady) return null;
+  if (!user) return <Navigate to="/auth" replace />;
+
+  return children;
+}
+
+function RequireTherapist({ children }) {
+  const { user, isAuthReady } = useAuth();
+
+  if (!isAuthReady) return null;
+  if (!user) return <Navigate to="/auth" replace />;
+  if (user.role !== "therapist") return <Navigate to="/" replace />;
+
+  return children;
+}
 
 function App() {
   return (
@@ -22,13 +42,14 @@ function App() {
         <Route path="/videos" element={<VideosPage />} />
           <Route path="/therapistchat" element={<TherapistChat />} />
              <Route path="/therapist" element={<Therapists />} />
-        <Route path="/therapist/:id" element={<TherapistDetail />} />        <Route path="/therapist/onboarding" element={<TherapistOnboarding />} />
-        <Route path="/therapist/appointments" element={<TherapistAppointments />} />
-        <Route path="/therapist/profile/edit" element={<TherapistProfileEdit />} />
+        <Route path="/therapist/:id" element={<TherapistDetail />} />
+        <Route path="/therapist/onboarding" element={<RequireTherapist><TherapistOnboarding /></RequireTherapist>} />
+        <Route path="/therapist/appointments" element={<RequireTherapist><TherapistAppointments /></RequireTherapist>} />
+        <Route path="/therapist/profile/edit" element={<RequireTherapist><TherapistProfileEdit /></RequireTherapist>} />
         <Route path="/auth" element={<Auth />} />
-        <Route path="/user/:id" element={<UserProfile />} />
-        <Route path="/journalwrite" element={<JournalWrite />} />
-        <Route path="/emotionpredictor" element={<EmotionPredictor />} />
+        <Route path="/user/:id" element={<RequireAuth><UserProfile /></RequireAuth>} />
+        <Route path="/journalwrite" element={<RequireAuth><JournalWrite /></RequireAuth>} />
+        <Route path="/emotionpredictor" element={<RequireAuth><EmotionPredictor /></RequireAuth>} />
       </Route>
     </Routes>
   );

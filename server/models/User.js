@@ -13,9 +13,14 @@ const userSchema = new mongoose.Schema({
     lowercase: true,
     trim: true,
   },
+  clerkId: {
+    type: String,
+    unique: true,
+    sparse: true,
+  },
   password: {
     type: String,
-    required: true,
+    required: false,
     select: false // do not include by default in queries
   },
   gender: String,
