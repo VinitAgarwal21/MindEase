@@ -4,3 +4,10 @@ joblib
 spacy
 scikit-learn
 pydantic
+google-generativeai
+dotenv
+deepface
+opencv-python
+fer
+tensorflow
+mtcnn

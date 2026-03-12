@@ -1,32 +1,25 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 from typing import List
-import joblib
+import google.generativeai as genai
+import os
 import json
-import spacy
-import uvicorn
+from dotenv import load_dotenv
 from fastapi.middleware.cors import CORSMiddleware
 
-# --------------- CONFIG ----------------
-MODEL_PATH = "model.joblib"
-VECTORIZER_PATH = "vectorizer.joblib"
-EMOTIONS_PATH = "emotion_cols.json"
-SPACY_MODEL = "en_core_web_sm"
-# ---------------------------------------
+# load env
+load_dotenv()
 
-# load resources (once)
-nlp = spacy.load(SPACY_MODEL)
-model = joblib.load(MODEL_PATH)
-vectorizer = joblib.load(VECTORIZER_PATH)
-with open(EMOTIONS_PATH, "r") as f:
-    emotion_cols = json.load(f)
+# configure gemini
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
-app = FastAPI(title="Emotion Predictor")
+model = genai.GenerativeModel("gemini-3-flash-preview")
 
-# allow your React dev server origin(s)
+app = FastAPI(title="Emotion Predictor (Gemini)")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # update if needed / add production domain
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -38,23 +31,45 @@ class TextIn(BaseModel):
 class PredictionOut(BaseModel):
     emotions: List[str]
 
-def preprocess_text(text: str) -> str:
-    doc = nlp(str(text).lower())
-    tokens = [token.lemma_ for token in doc if token.is_alpha and not token.is_stop and not token.is_punct]
-    return " ".join(tokens)
+
+def detect_emotions(text: str):
+
+    prompt = f"""
+    Detect emotions present in the following text.
+
+    Possible emotions:
+    joy, sadness, anger, fear, love, surprise, neutral, suicidal
+
+    Return ONLY a JSON list.
+
+    Example:
+    ["joy","love"]
+
+    Text:
+    {text}
+    """
+
+    response = model.generate_content(prompt)
+
+    try:
+        emotions = json.loads(response.text)
+    except:
+        emotions = ["neutral"]
+
+    return emotions
+
 
 @app.post("/predict", response_model=PredictionOut)
 def predict(payload: TextIn):
-    cleaned = preprocess_text(payload.text)
-    vec = vectorizer.transform([cleaned])
-    preds = model.predict(vec)[0]  # multi-label array of 0/1
-    active_emotions = [
-        emotion_cols[i].replace("Answer.f1.", "").replace(".raw", "")
-        for i, val in enumerate(preds) if int(val) == 1
-    ]
-    if not active_emotions:
-        active_emotions = ["neutral"]
-    return {"emotions": active_emotions}
+
+    emotions = detect_emotions(payload.text)
+
+    if not emotions:
+        emotions = ["neutral"]
+
+    return {"emotions": emotions}
+
 
 if __name__ == "__main__":
+    import uvicorn
     uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=True)
