@@ -2,17 +2,20 @@
 import React, { useEffect, useRef, useState } from "react";
 import ChatMessage from "../components/ChatMessage";
 import { sendTherapyMessage } from "../services/api";
-
-const STORAGE_KEY = "therapistChatHistory";
+import { useAuth } from "../context/AuthContext.jsx";
 
 export default function TherapistChat() {
+  const { user } = useAuth();
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
   const endRef = useRef(null);
 
+  // Per-user storage key so each user sees only their own chat history
+  const storageKey = user?.id ? `therapistChatHistory_${user.id}` : "therapistChatHistory";
+
   // initial assistant prompt if no history
   useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
+    const stored = localStorage.getItem(storageKey);
     if (stored) {
       try {
         setMessages(JSON.parse(stored));
@@ -28,14 +31,14 @@ export default function TherapistChat() {
         content: "Hello — I'm your virtual therapist. How are you feeling today?",
       },
     ]);
-  }, []);
+  }, [storageKey]);
 
   // persist
   useEffect(() => {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
+      localStorage.setItem(storageKey, JSON.stringify(messages));
     } catch (_) {}
-  }, [messages]);
+  }, [messages, storageKey]);
 
   // auto-scroll
   useEffect(() => {

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useAuth } from "../context/AuthContext.jsx";
 
 
 /**
@@ -10,6 +11,7 @@ export default function EmotionPredictor() {
   const [loading, setLoading] = useState(false);
   const [emotions, setEmotions] = useState(null);
   const [error, setError] = useState(null);
+  const { getAuthToken } = useAuth();
 
   const API_BASE ="http://localhost:5000";
   // history: array of { text, emotions, time (ISO string) }
@@ -50,41 +52,19 @@ export default function EmotionPredictor() {
     return { "Content-Type": "application/json" };
   }
 
+  async function authHeaders() {
+    const token = await getAuthToken();
+    return { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
+  }
 
-//   async function fetchHistory() {
-//     setError(null);
-//     try {
-//       const resp = await fetch(`${API_BASE}/api/journals`, {
-//         method: "GET",
-//         headers: authHeaders(),
-//       });
-
-//       if (resp.status === 401) {
-//         setError("Not authenticated. Please login to load your history.");
-//         setHistory([]);
-//         return;
-//       }
-
-//       if (!resp.ok) {
-//         throw new Error("Failed to load history: " + resp.status);
-//       }
-
-//       const data = await resp.json();
-//       // normalize: ensure createdAt present for formatDate
-//       setHistory(Array.isArray(data) ? data : []);
-//     } catch (err) {
-//       console.error("fetchHistory error:", err);
-//       setError(err.message || "Failed to fetch history");
-//     }
-//   }
-
- // fetch all journals (public, no auth required)
+ // fetch user's own journals (requires auth)
   async function fetchHistory() {
     setError(null);
     try {
+      const headers = await authHeaders();
       const resp = await fetch(`${API_BASE}/api/journals/`, {
         method: "GET",
-        headers: jsonHeaders(),
+        headers,
       });
 
       if (!resp.ok) {
@@ -103,12 +83,13 @@ export default function EmotionPredictor() {
 console.log("sample createdAt:", history[0]?.createdAt, "type:", typeof history[0]?.createdAt);
 
 
-  // create journal in backend after prediction
+  // create journal in backend after prediction (requires auth)
   async function createJournalBackend({ text, emotions }) {
     try {
+      const headers = await authHeaders();
       const resp = await fetch(`${API_BASE}/api/journals/`, {
         method: "POST",
-        headers: jsonHeaders(),
+        headers,
         body: JSON.stringify({ text, emotions }),
       });
 
