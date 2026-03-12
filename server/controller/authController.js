@@ -125,3 +125,45 @@ export const getProfile = async (req, res) => {
         res.status(500).json({ message: "Server error" });
     }
 };
+
+export const syncClerkUser = async (req, res) => {
+    try {
+        const { role, name, email } = req.body;
+
+        const safeRole = role === "therapist" ? "therapist" : "user";
+
+        const user = await User.findById(req.user.id);
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        if (name && typeof name === "string" && name.trim()) {
+            user.name = name.trim();
+        }
+
+        if (email && typeof email === "string" && email.trim()) {
+            user.email = email.trim().toLowerCase();
+        }
+
+        if (safeRole && user.role !== safeRole) {
+            user.role = safeRole;
+        }
+
+        await user.save();
+
+        return res.json({
+            success: true,
+            user: {
+                id: user._id,
+                name: user.name,
+                email: user.email,
+                gender: user.gender,
+                role: user.role,
+                clerkId: user.clerkId,
+            },
+        });
+    } catch (err) {
+        console.error("syncClerkUser error:", err);
+        return res.status(500).json({ message: "Server error" });
+    }
+};

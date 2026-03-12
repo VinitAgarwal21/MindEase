@@ -1,16 +1,19 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useState } from "react";
+import { useUser } from "@clerk/clerk-react";
 import { User, LogOut } from "lucide-react"; // for icons
 
 export default function Navbar() {
   const { user, logout } = useAuth();
+  const { isSignedIn, user: clerkUser } = useUser();
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
-  console.log("Navbar user:", user);
+  const displayName = user?.name || clerkUser?.fullName || clerkUser?.firstName || "Profile";
+  const displayImage = clerkUser?.imageUrl || null;
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     navigate("/auth");
   };
   const handleProfileClick = () => {
@@ -21,6 +24,8 @@ export default function Navbar() {
       } else {
         navigate(`/user/${user.id}`);
       }
+    } else if (isSignedIn) {
+      navigate("/");
     } else {
       navigate("/auth");
     }
@@ -61,7 +66,7 @@ export default function Navbar() {
           </Link> */}
 
           {/* Conditional Render */}
-          {!user ? (
+          {!user && !isSignedIn ? (
             <Link
               to="/auth"
               className="px-4 py-2 rounded-full bg-mindease-500 text-white hover:bg-mindease-600 transition"
@@ -72,9 +77,17 @@ export default function Navbar() {
             <div className="relative">
               <button
                 onClick={() => setOpen(!open)}
-                className="flex items-center justify-center w-10 h-10 rounded-full bg-mindease-500 text-white hover:bg-mindease-600"
+                className="flex items-center justify-center w-10 h-10 rounded-full bg-mindease-500 text-white hover:bg-mindease-600 overflow-hidden"
               >
-                <User size={20} />
+                {displayImage ? (
+                  <img
+                    src={displayImage}
+                    alt={displayName}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <User size={20} />
+                )}
               </button>
 
               {open && (
@@ -83,7 +96,7 @@ export default function Navbar() {
                     onClick={handleProfileClick}
                     className="px-4 py-2 text-sm text-gray-700 border-b w-full text-left hover:bg-gray-100"
                   >
-                    {user.name || "Profile"}
+                    {displayName}
                   </button>
                   <button
                     onClick={handleLogout}

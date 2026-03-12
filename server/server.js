@@ -3,6 +3,7 @@ import connectDB from "./config/db.js";
 import express, { urlencoded } from "express"
 import cookieParser from "cookie-parser";
 import cors from "cors";
+import { clerkMiddleware } from "@clerk/express";
 import authRoutes from "./routes/authRoutes.js";
 import journalRoutes from "./routes/journalRoutes.js";
 import therapistRoutes from "./routes/therapistRoutes.js";
@@ -19,6 +20,7 @@ const app = express();
 app.use(express.json());
 app.use(cookieParser());
 app.use(urlencoded({ extended: true }));
+app.use(clerkMiddleware());
 
 // Configuring CORS
 const corsOptions = {

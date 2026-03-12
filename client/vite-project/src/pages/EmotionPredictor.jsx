@@ -46,13 +46,6 @@ export default function EmotionPredictor() {
     }
   }
 
-   function authHeaders() {
-    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
-    const headers = { "Content-Type": "application/json" };
-    if (token) headers["Authorization"] = `Bearer ${token}`;
-    return headers;
-  }
-
   function jsonHeaders() {
     return { "Content-Type": "application/json" };
   }

@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { useAuth } from "../context/AuthContext.jsx";
 
 const TherapistAppointments = () => {
-  const { user } = useAuth();
+  const { user, getAuthToken } = useAuth();
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
@@ -18,10 +18,12 @@ const TherapistAppointments = () => {
     setLoading(true);
     try {
       const query = filter !== "all" ? `?status=${filter}` : "";
+      const token = await getAuthToken();
+
       const response = await fetch(
         `http://localhost:5000/api/appointments/my-appointments${query}`,
         {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
 
@@ -38,13 +40,15 @@ const TherapistAppointments = () => {
   const handleStatusChange = async (appointmentId, newStatus) => {
     setUpdating(appointmentId);
     try {
+      const token = await getAuthToken();
+
       const response = await fetch(
         `http://localhost:5000/api/appointments/${appointmentId}`,
         {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({ status: newStatus }),
         }
