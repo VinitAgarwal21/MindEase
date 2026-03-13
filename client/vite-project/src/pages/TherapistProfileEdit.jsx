@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { Save, ArrowLeft } from "lucide-react";
 import { useAuth } from "../context/AuthContext.jsx";
+import { resizeImageToDataUrl } from "../utils/imageUpload.js";
 
 const SPECIALTIES = [
   "Anxiety",
@@ -25,6 +26,7 @@ export default function TherapistProfileEdit() {
     hourlyRate: "",
     specialties: [],
     bio: "",
+    profilePicture: "",
   });
 
   useEffect(() => {
@@ -49,6 +51,7 @@ export default function TherapistProfileEdit() {
             hourlyRate: data.profile.hourlyRate || "",
             specialties: data.profile.specialization || [],
             bio: data.profile.bio || "",
+            profilePicture: data.profile.profilePicture || "",
           });
         }
       }
@@ -77,6 +80,31 @@ export default function TherapistProfileEdit() {
     setForm((prev) => ({ ...prev, [id]: value }));
   };
 
+  const handleProfilePhotoChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please select an image file.");
+      e.target.value = "";
+      return;
+    }
+
+    try {
+      const profilePicture = await resizeImageToDataUrl(file);
+      setForm((prev) => ({ ...prev, profilePicture }));
+      toast.success("Profile photo added.");
+    } catch (error) {
+      toast.error(error.message || "Failed to process image.");
+    } finally {
+      e.target.value = "";
+    }
+  };
+
+  const removeProfilePhoto = () => {
+    setForm((prev) => ({ ...prev, profilePicture: "" }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSaving(true);
@@ -97,6 +125,7 @@ export default function TherapistProfileEdit() {
           qualifications: form.licenseId,
           hourlyRate: form.hourlyRate ? parseFloat(form.hourlyRate) : 0,
           headline: form.headline,
+          profilePicture: form.profilePicture,
         }),
       });
 
@@ -143,6 +172,39 @@ export default function TherapistProfileEdit() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
+          <div>
+            <label className="block text-sm font-medium text-mindease-800">Profile photo</label>
+            <div className="mt-3 flex items-center gap-4 flex-wrap">
+              <img
+                src={form.profilePicture || "https://randomuser.me/api/portraits/lego/1.jpg"}
+                alt="Therapist preview"
+                className="h-24 w-24 rounded-2xl object-cover border border-mindease-200 shadow-sm"
+              />
+              <div className="space-y-2">
+                <label className="inline-flex cursor-pointer items-center rounded-lg bg-mindease-600 px-4 py-2 text-white hover:bg-mindease-700 transition">
+                  Change photo
+                  <input
+                    type="file"
+                    accept="image/*"
+                    capture="user"
+                    className="hidden"
+                    onChange={handleProfilePhotoChange}
+                  />
+                </label>
+                {form.profilePicture && (
+                  <button
+                    type="button"
+                    onClick={removeProfilePhoto}
+                    className="block text-sm text-red-600 hover:text-red-700"
+                  >
+                    Remove photo
+                  </button>
+                )}
+                <p className="text-xs text-mindease-600">This photo will be shown to users while they browse and book appointments.</p>
+              </div>
+            </div>
+          </div>
+
           <div>
             <label className="block text-sm font-medium text-mindease-800">Profile headline</label>
             <input
