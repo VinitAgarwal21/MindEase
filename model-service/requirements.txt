@@ -1,6 +1,8 @@
 fastapi
-uvicorn[standard]
+uvicorn
 joblib
 spacy
 scikit-learn
 pydantic
+google-generativeai
+dotenv
