@@ -146,6 +146,14 @@ Contributions are welcome!
 B.Tech ECE @ IIIT Una
 ML | GenAI | Full Stack
 
+**Sahil Dargar**
+B.Tech ECE @ IIIT Una
+Full Stack
+
+**Kanishk Pundir**
+B.Tech ECE @ IIIT Una
+Full Stack
+
 ---
 
 ## ⭐ Support
