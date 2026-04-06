@@ -4,6 +4,30 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useAuth } from "../context/AuthContext.jsx";
 
+const loadRazorpayScript = () => {
+  return new Promise((resolve) => {
+    if (window.Razorpay) {
+      resolve(true);
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+};
+
+const parseApiResponse = async (res) => {
+  const contentType = res.headers.get("content-type") || "";
+  if (contentType.includes("application/json")) {
+    return res.json();
+  }
+  const text = await res.text();
+  return { error: text || "Unexpected server response" };
+};
+
 const TherapistDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -11,6 +35,9 @@ const TherapistDetail = () => {
   const [therapist, setTherapist] = useState(null);
   const [loading, setLoading] = useState(true);
   const [bookingLoading, setBookingLoading] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [pendingPayload, setPendingPayload] = useState(null);
+  const [bookingFormRef, setBookingFormRef] = useState(null);
 
   useEffect(() => {
     fetchTherapist();
@@ -49,9 +76,8 @@ const TherapistDetail = () => {
     );
   }
 
-  const handleBooking = async (e) => {
+  const handleBooking = (e) => {
     e.preventDefault();
-    setBookingLoading(true);
 
     const form = e.target;
     const payload = {
@@ -62,24 +88,95 @@ const TherapistDetail = () => {
       preferredDate: form.date.value,
       preferredTime: form.time.value,
       note: form.note?.value || "",
-      sessionFee: therapist.hourlyRate || 0,
     };
 
+    if (!therapist.hourlyRate || therapist.hourlyRate <= 0) {
+      toast.error("Therapist has not configured a valid session fee yet");
+      return;
+    }
+
+    setPendingPayload(payload);
+    setBookingFormRef(form);
+    setShowPaymentModal(true);
+  };
+
+  const handlePayAndBook = async () => {
+    if (!pendingPayload) return;
+    setBookingLoading(true);
+
     try {
+      const scriptLoaded = await loadRazorpayScript();
+      if (!scriptLoaded) {
+        throw new Error("Failed to load Razorpay. Please check your internet connection.");
+      }
+
       const token = await getAuthToken();
-      const res = await fetch("http://localhost:5000/api/appointments", {
+      const orderRes = await fetch("http://localhost:5000/api/appointments/create-payment-order", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({ therapistId: therapist._id }),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Booking failed");
-      toast.success("Booking submitted — you'll receive a confirmation soon.");
-      form.reset();
-      navigate("/therapist");
+
+      const orderData = await parseApiResponse(orderRes);
+      if (!orderRes.ok) throw new Error(orderData.error || "Failed to initiate payment");
+
+      const options = {
+        key: orderData.razorpayKey,
+        amount: orderData.order.amount,
+        currency: orderData.order.currency,
+        name: "MindEase",
+        description: `Appointment with ${therapist.name}`,
+        order_id: orderData.order.id,
+        prefill: {
+          name: pendingPayload.userName,
+          email: pendingPayload.userEmail,
+        },
+        theme: { color: "#4f46e5" },
+        handler: async function (response) {
+          try {
+            const verifyRes = await fetch("http://localhost:5000/api/appointments/verify-payment-and-book", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({
+                ...pendingPayload,
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+              }),
+            });
+
+            const verifyData = await parseApiResponse(verifyRes);
+            if (!verifyRes.ok) {
+              throw new Error(verifyData.error || "Payment verification failed");
+            }
+
+            toast.success("Payment successful and appointment booked.");
+            bookingFormRef?.reset();
+            setPendingPayload(null);
+            navigate("/therapist");
+          } catch (verifyError) {
+            toast.error(verifyError.message || "Payment done but booking failed. Contact support.");
+          } finally {
+            setBookingLoading(false);
+          }
+        },
+        modal: {
+          ondismiss: function () {
+            setBookingLoading(false);
+            toast.error("Payment cancelled.");
+          },
+        },
+      };
+
+      setShowPaymentModal(false);
+      const paymentObject = new window.Razorpay(options);
+      paymentObject.open();
     } catch (err) {
       console.error(err);
       toast.error("Failed to book: " + err.message);
@@ -123,7 +220,7 @@ const TherapistDetail = () => {
             )}
             {therapist.hourlyRate && (
               <p className="text-gray-700 text-lg font-semibold mt-1">
-                ${therapist.hourlyRate}/hour
+                ₹{therapist.hourlyRate}/session
               </p>
             )}
           </div>
@@ -150,6 +247,7 @@ const TherapistDetail = () => {
               <input
                 id="name"
                 type="text"
+                defaultValue={user?.name || ""}
                 placeholder="Enter your full name"
                 className="outline-none py-2.5 px-3 rounded border border-gray-400 focus:ring-2 focus:ring-mindease-400"
                 required
@@ -163,6 +261,7 @@ const TherapistDetail = () => {
               <input
                 id="email"
                 type="email"
+                defaultValue={user?.email || ""}
                 placeholder="Enter your email"
                 className="outline-none py-2.5 px-3 rounded border border-gray-400 focus:ring-2 focus:ring-mindease-400"
                 required
@@ -198,12 +297,24 @@ const TherapistDetail = () => {
               </select>
             </div>
 
+            <div className="flex flex-col gap-1">
+              <label htmlFor="note" className="text-base font-medium text-gray-700">
+                Note (optional)
+              </label>
+              <textarea
+                id="note"
+                placeholder="Any preference or additional details"
+                className="outline-none py-2.5 px-3 rounded border border-gray-400 focus:ring-2 focus:ring-mindease-400"
+                rows={3}
+              />
+            </div>
+
             <div className="flex justify-between items-center">
               <p className="text-lg font-semibold text-gray-700">
-                Session Fee: ${therapist.hourlyRate || 0}
+                Session Fee: ₹{therapist.hourlyRate || 0}
               </p>
               <button
-                disabled={bookingLoading}
+                disabled={bookingLoading || !therapist.hourlyRate || therapist.hourlyRate <= 0}
                 type="submit"
                 className="px-8 py-2.5 bg-mindease-500 text-white font-medium rounded-lg hover:bg-mindease-600 transition disabled:opacity-50"
               >
@@ -220,6 +331,39 @@ const TherapistDetail = () => {
           </p> */}
         </div>
       </div>
+
+      {showPaymentModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+            <h3 className="text-xl font-semibold text-gray-900">Confirm Payment</h3>
+            <p className="mt-2 text-gray-600">Pay the amount below to book your appointment.</p>
+
+            <div className="mt-5 rounded-xl border border-mindease-200 bg-mindease-50 p-4">
+              <p className="text-sm text-mindease-700">Amount to pay</p>
+              <p className="text-2xl font-bold text-mindease-900">₹{therapist.hourlyRate || 0}</p>
+            </div>
+
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setShowPaymentModal(false)}
+                disabled={bookingLoading}
+                className="px-4 py-2 border rounded-lg text-mindease-700 hover:bg-mindease-50 disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handlePayAndBook}
+                disabled={bookingLoading}
+                className="px-5 py-2 bg-mindease-600 text-white rounded-lg hover:bg-mindease-700 disabled:opacity-50"
+              >
+                {bookingLoading ? "Processing..." : `Pay ₹${therapist.hourlyRate || 0}`}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -66,6 +66,8 @@ export const AuthProvider = ({ children }) => {
       const token = await getToken();
       if (!token) return;
 
+      const rolePreference = localStorage.getItem("mindease_role_preference") || "user";
+
       const response = await fetch("http://localhost:5000/api/auth/clerk-sync", {
         method: "POST",
         headers: {
@@ -73,7 +75,7 @@ export const AuthProvider = ({ children }) => {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          role: clerkUser?.publicMetadata?.role || "user",
+          role: clerkUser?.publicMetadata?.role || rolePreference,
           name: clerkUser?.fullName || clerkUser?.firstName || "User",
           email: clerkUser?.primaryEmailAddress?.emailAddress || "",
         }),

@@ -129,8 +129,8 @@ export const getProfile = async (req, res) => {
 export const syncClerkUser = async (req, res) => {
     try {
         const { role, name, email } = req.body;
-
-        const safeRole = role === "therapist" ? "therapist" : "user";
+        const normalizedRole = typeof role === "string" ? role.trim().toLowerCase() : null;
+        const hasValidRole = normalizedRole === "user" || normalizedRole === "therapist";
 
         const user = await User.findById(req.user.id);
         if (!user) {
@@ -145,8 +145,20 @@ export const syncClerkUser = async (req, res) => {
             user.email = email.trim().toLowerCase();
         }
 
-        if (safeRole && user.role !== safeRole) {
-            user.role = safeRole;
+        if (hasValidRole && user.role !== normalizedRole) {
+            user.role = normalizedRole;
+
+            if (normalizedRole === "therapist") {
+                const existingTherapistProfile = await Therapist.findOne({ user: user._id });
+                if (!existingTherapistProfile) {
+                    await Therapist.create({
+                        user: user._id,
+                        name: user.name,
+                        specialization: [],
+                        bio: "",
+                    });
+                }
+            }
         }
 
         await user.save();

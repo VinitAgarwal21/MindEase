@@ -260,7 +260,7 @@ export default function TherapistOnboarding() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-mindease-800">Hourly rate (USD)</label>
+                <label className="block text-sm font-medium text-mindease-800">Session fee (INR)</label>
                 <input
                   id="hourlyRate"
                   value={form.hourlyRate}
@@ -268,7 +268,7 @@ export default function TherapistOnboarding() {
                   type="number"
                   min="0"
                   className="mt-2 w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-mindease-400 focus:outline-none"
-                  placeholder="e.g., 80"
+                  placeholder="e.g., 1000"
                 />
               </div>
             </div>

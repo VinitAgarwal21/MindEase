@@ -103,6 +103,19 @@ The system analyzes user inputs and generates **context-aware, empathetic respon
 
 ---
 
+## 💳 Razorpay Appointment Payments
+
+To enable payment-first appointment booking, add these variables in your server `.env` file:
+
+```env
+RAZORPAY_KEY_ID=your_razorpay_key_id
+RAZORPAY_KEY_SECRET=your_razorpay_key_secret
+```
+
+Then restart the backend server. Therapists can set their session fee from profile/onboarding, and users will see this fee at checkout.
+
+---
+
 ## 🧠 Problem It Solves
 
 * Lack of accessible mental health support

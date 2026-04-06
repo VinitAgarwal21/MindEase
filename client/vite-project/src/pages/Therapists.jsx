@@ -67,7 +67,7 @@ function Therapists() {
                 )}
                 {t.hourlyRate && (
                   <p className="text-sm text-mindease-600 mt-2">
-                    ${t.hourlyRate} / hour
+                    ₹{t.hourlyRate} / session
                   </p>
                 )}
                 <Link

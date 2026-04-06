@@ -37,6 +37,11 @@ const authMiddleware = async (req, res, next) => {
         });
       } else if (!user.clerkId) {
         user.clerkId = auth.userId;
+
+        if (clerkUser.publicMetadata?.role === "therapist" && user.role !== "therapist") {
+          user.role = "therapist";
+        }
+
         await user.save();
       }
     }

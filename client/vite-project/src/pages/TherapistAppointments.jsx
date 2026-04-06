@@ -27,7 +27,10 @@ const TherapistAppointments = () => {
         }
       );
 
-      if (!response.ok) throw new Error("Failed to fetch appointments");
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || "Failed to fetch appointments");
+      }
       const data = await response.json();
       setAppointments(data.appointments || []);
     } catch (err) {
@@ -151,8 +154,14 @@ const TherapistAppointments = () => {
                     </div>
                     {appt.sessionFee && (
                       <div className="flex items-center gap-2 text-mindease-700">
-                        <span className="text-mindease-500">$</span>
-                        <span>${appt.sessionFee}</span>
+                        <span className="text-mindease-500">₹</span>
+                        <span>₹{appt.sessionFee}</span>
+                      </div>
+                    )}
+                    {appt.paymentStatus && (
+                      <div className="flex items-center gap-2 text-mindease-700">
+                        <span className="text-mindease-500">Payment:</span>
+                        <span className="capitalize">{appt.paymentStatus}</span>
                       </div>
                     )}
                   </div>

@@ -10,6 +10,14 @@ const AppointmentSchema = new mongoose.Schema({
   preferredTime: { type: String, required: true },
   note: { type: String },
   sessionFee: { type: Number },
+  paymentStatus: {
+    type: String,
+    enum: ["pending", "paid", "failed"],
+    default: "pending",
+  },
+  paymentId: { type: String },
+  paymentOrderId: { type: String },
+  paymentSignature: { type: String },
   status: {
     type: String,
     enum: ["pending", "confirmed", "cancelled", "completed"],
