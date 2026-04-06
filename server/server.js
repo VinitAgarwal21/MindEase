@@ -24,9 +24,9 @@ const corsOptions = {
 app.use(cors(corsOptions));
 
 //middlewares
-app.use(express.json());
+app.use(express.json({ limit: "10mb" }));
 app.use(cookieParser());
-app.use(urlencoded({ extended: true }));
+app.use(urlencoded({ extended: true, limit: "10mb" }));
 app.use(clerkMiddleware());
 
 const PORT = process.env.PORT || 5000;

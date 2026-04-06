@@ -38,8 +38,19 @@ export const updateTherapistProfile = async (req, res) => {
             return res.status(403).json({ message: "Access denied. Only therapists can update profiles." });
         }
 
-        const updateFields = req.body;
-        console.log("Received update fields:", updateFields);
+        const updateFields = {
+            headline: req.body.headline,
+            specialization: Array.isArray(req.body.specialization) ? req.body.specialization : [],
+            qualifications: req.body.qualifications,
+            experience: req.body.experience,
+            bio: req.body.bio,
+            hourlyRate: req.body.hourlyRate,
+            profilePicture: typeof req.body.profilePicture === "string" ? req.body.profilePicture : "",
+        };
+        console.log("Received update fields:", {
+            ...updateFields,
+            profilePicture: updateFields.profilePicture ? `[image:${updateFields.profilePicture.length} chars]` : "",
+        });
         console.log("Looking for therapist with user ID:", req.user.id);
         
         let therapistProfile = await Therapist.findOne({ user: req.user.id });
