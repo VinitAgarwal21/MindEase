@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext.jsx";
+import { API_BASE_URL } from "../config/env";
 
 
 /**
@@ -13,7 +14,7 @@ export default function EmotionPredictor() {
   const [error, setError] = useState(null);
   const { getAuthToken } = useAuth();
 
-  const API_BASE ="http://localhost:5000";
+  const API_BASE = API_BASE_URL;
   // history: array of { text, emotions, time (ISO string) }
   const [history, setHistory] = useState([]);
 
@@ -78,10 +79,6 @@ export default function EmotionPredictor() {
       setError(err.message || "Failed to fetch history");
     }
   }
-
-  // inside render or after fetching
-console.log("sample createdAt:", history[0]?.createdAt, "type:", typeof history[0]?.createdAt);
-
 
   // create journal in backend after prediction (requires auth)
   async function createJournalBackend({ text, emotions }) {
@@ -159,7 +156,7 @@ console.log("sample createdAt:", history[0]?.createdAt, "type:", typeof history[
 
   return (
     <div className="min-h-screen flex items-center justify-center ">
-      <div className="w-full max-w-5xl bg-white rounded-2xl shadow-lg p-6 sm:p-10 transition-all">
+      <div className="w-full max-w-5xl surface-card rounded-2xl p-6 sm:p-10 transition-all">
         <h2 className="text-2xl sm:text-3xl font-semibold mb-3 text-gray-900">
           Write down your thoughts...
         </h2>

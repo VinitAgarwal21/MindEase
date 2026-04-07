@@ -9,7 +9,7 @@ const Auth = () => {
     localStorage.getItem("mindease_role_preference") || "user"
   );
   const navigate = useNavigate();
-  const { user, isAuthReady } = useAuth();
+  const { user, isAuthReady, authError } = useAuth();
 
   useEffect(() => {
     if (!isAuthReady) return;
@@ -30,22 +30,35 @@ const Auth = () => {
     localStorage.setItem("mindease_role_preference", selectedRole);
   };
 
+  const setAuthIntent = (mode) => {
+    localStorage.setItem("mindease_auth_intent", mode);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <SignedIn>
-        <div className="bg-white shadow-xl rounded-2xl p-8 w-full max-w-md text-center">
+        <div className="bg-white shadow-xl rounded-2xl p-5 sm:p-8 w-full max-w-md text-center">
           <h1 className="text-2xl font-semibold text-gray-800">Authentication complete</h1>
           <p className="text-gray-600 mt-2">Redirecting to your dashboard...</p>
         </div>
       </SignedIn>
 
       <SignedOut>
-        <div className="bg-white shadow-xl rounded-2xl p-8 w-full max-w-md">
+        <div className="bg-white shadow-xl rounded-2xl p-5 sm:p-8 w-full max-w-md">
           <h1 className="text-3xl font-bold text-gray-800 text-center mb-6">MindEase</h1>
+
+          {authError && (
+            <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              {authError}
+            </div>
+          )}
 
           <div className="flex justify-center gap-4 mb-6">
             <button
-              onClick={() => setIsLogin(true)}
+              onClick={() => {
+                setIsLogin(true);
+                setAuthIntent("login");
+              }}
               className={`px-6 py-2 rounded-lg font-medium ${
                 isLogin ? "bg-mindease-500 text-white" : "bg-gray-200 text-gray-700"
               }`}
@@ -53,7 +66,10 @@ const Auth = () => {
               Login
             </button>
             <button
-              onClick={() => setIsLogin(false)}
+              onClick={() => {
+                setIsLogin(false);
+                setAuthIntent("signup");
+              }}
               className={`px-6 py-2 rounded-lg font-medium ${
                 !isLogin ? "bg-mindease-500 text-white" : "bg-gray-200 text-gray-700"
               }`}

@@ -22,7 +22,7 @@ const VideoCarousel = ({ videos }) => {
       {/* Left Button */}
       <button
         onClick={() => scroll("left")}
-        className="absolute left-0 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white shadow-lg p-2 rounded-full z-10"
+        className="hidden sm:block absolute left-0 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white shadow-lg p-2 rounded-full z-10"
       >
         <ChevronLeft size={24} />
       </button>
@@ -30,12 +30,12 @@ const VideoCarousel = ({ videos }) => {
       {/* Video Container */}
       <div
         ref={carouselRef}
-        className="flex overflow-x-scroll scrollbar-hide scroll-smooth snap-x snap-mandatory space-x-4 px-10"
+        className="flex overflow-x-scroll scrollbar-hide scroll-smooth snap-x snap-mandatory space-x-4 px-2 sm:px-10"
       >
         {videos.map((video, idx) => (
           <div
             key={idx}
-            className="min-w-[350px] snap-center bg-white rounded-2xl shadow-md p-4"
+            className="min-w-[85vw] sm:min-w-[350px] snap-center bg-white rounded-2xl shadow-md p-4"
           >
             <iframe
               width="100%"
@@ -54,7 +54,7 @@ const VideoCarousel = ({ videos }) => {
       {/* Right Button */}
       <button
         onClick={() => scroll("right")}
-        className="absolute right-0 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white shadow-lg p-2 rounded-full z-10"
+        className="hidden sm:block absolute right-0 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white shadow-lg p-2 rounded-full z-10"
       >
         <ChevronRight size={24} />
       </button>

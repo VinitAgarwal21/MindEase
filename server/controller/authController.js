@@ -7,11 +7,21 @@ import { Therapist } from "../models/Therapist.js";
 export const registerUser = async (req, res) => {
     try {
         const {  name, email, password, gender, role, specialization, bio } = req.body;
+        const normalizedEmail = String(email || "").trim().toLowerCase();
+        const normalizedRole = String(role || "user").trim().toLowerCase();
+
+        if (!normalizedEmail) {
+            return res.status(400).json({ message: "Email is required" });
+        }
+
+        if (normalizedRole !== "user" && normalizedRole !== "therapist") {
+            return res.status(400).json({ message: "Invalid role selected" });
+        }
 
         // See if user already exists
-        const userExists = await User.findOne({ email });
+        const userExists = await User.findOne({ email: normalizedEmail });
         if (userExists) {
-            return res.status(400).json({ message: "User already exists" });
+            return res.status(409).json({ message: "This email is already registered. Please login." });
         }
 
         // Hash password    
@@ -21,10 +31,11 @@ export const registerUser = async (req, res) => {
         // Create user
         const user = await User.create({
             name,
-            email,
+            email: normalizedEmail,
             password: hashedPassword,
             gender,
-            role
+            role: normalizedRole,
+            roleLocked: true,
         });
 
         if (user.role === 'therapist') {
@@ -131,6 +142,7 @@ export const syncClerkUser = async (req, res) => {
         const { role, name, email } = req.body;
         const normalizedRole = typeof role === "string" ? role.trim().toLowerCase() : null;
         const hasValidRole = normalizedRole === "user" || normalizedRole === "therapist";
+        const normalizedEmail = typeof email === "string" ? email.trim().toLowerCase() : "";
 
         const user = await User.findById(req.user.id);
         if (!user) {
@@ -141,23 +153,38 @@ export const syncClerkUser = async (req, res) => {
             user.name = name.trim();
         }
 
-        if (email && typeof email === "string" && email.trim()) {
-            user.email = email.trim().toLowerCase();
+        if (normalizedEmail && normalizedEmail !== user.email) {
+            const emailOwner = await User.findOne({ email: normalizedEmail });
+            if (emailOwner && String(emailOwner._id) !== String(user._id)) {
+                return res.status(409).json({
+                    message: "This email is already registered. Please login.",
+                });
+            }
+            user.email = normalizedEmail;
         }
 
-        if (hasValidRole && user.role !== normalizedRole) {
-            user.role = normalizedRole;
+        const therapistProfile = await Therapist.findOne({ user: user._id });
 
-            if (normalizedRole === "therapist") {
-                const existingTherapistProfile = await Therapist.findOne({ user: user._id });
-                if (!existingTherapistProfile) {
-                    await Therapist.create({
-                        user: user._id,
-                        name: user.name,
-                        specialization: [],
-                        bio: "",
-                    });
-                }
+        if (therapistProfile && user.role !== "therapist") {
+            user.role = "therapist";
+            user.roleLocked = true;
+        }
+
+        if (!user.roleLocked) {
+            if (hasValidRole) {
+                user.role = normalizedRole;
+            }
+            user.roleLocked = true;
+        }
+
+        if (user.role === "therapist") {
+            if (!therapistProfile) {
+                await Therapist.create({
+                    user: user._id,
+                    name: user.name,
+                    specialization: [],
+                    bio: "",
+                });
             }
         }
 

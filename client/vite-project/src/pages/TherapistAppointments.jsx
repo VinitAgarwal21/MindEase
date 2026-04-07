@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import { Calendar, Mail, User, Clock, FileText, CheckCircle, AlertCircle } from "lucide-react";
+import { Calendar, Mail, User, Clock, FileText, CheckCircle, AlertCircle, CircleCheck, CircleX } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "../context/AuthContext.jsx";
+import { API_BASE_URL } from "../config/env";
 
 const TherapistAppointments = () => {
   const { user, getAuthToken } = useAuth();
@@ -21,7 +22,7 @@ const TherapistAppointments = () => {
       const token = await getAuthToken();
 
       const response = await fetch(
-        `http://localhost:5000/api/appointments/my-appointments${query}`,
+        `${API_BASE_URL}/api/appointments/my-appointments${query}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -46,7 +47,7 @@ const TherapistAppointments = () => {
       const token = await getAuthToken();
 
       const response = await fetch(
-        `http://localhost:5000/api/appointments/${appointmentId}`,
+        `${API_BASE_URL}/api/appointments/${appointmentId}`,
         {
           method: "PATCH",
           headers: {
@@ -58,10 +59,27 @@ const TherapistAppointments = () => {
       );
 
       if (!response.ok) throw new Error("Failed to update appointment");
-      toast.success(`Appointment ${newStatus}`);
+      const data = await response.json();
+      if (newStatus === "confirmed") {
+        if (data?.emailNotification?.sent) {
+          toast.success("Appointment confirmed and email sent to user", {
+            icon: <CircleCheck size={16} />,
+          });
+        } else {
+          toast.warning("Appointment confirmed. Email could not be sent.", {
+            icon: <AlertCircle size={16} />,
+          });
+        }
+      } else {
+        toast.success(`Appointment ${newStatus}`, {
+          icon: <CircleCheck size={16} />,
+        });
+      }
       fetchAppointments();
     } catch (err) {
-      toast.error(err.message || "Failed to update appointment");
+      toast.error(err.message || "Failed to update appointment", {
+        icon: <CircleX size={16} />,
+      });
     } finally {
       setUpdating(null);
     }
@@ -91,8 +109,8 @@ const TherapistAppointments = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="bg-white border rounded-2xl shadow-sm p-8">
-        <h1 className="text-3xl font-bold text-mindease-900 mb-2">Client Appointments</h1>
+      <div className="bg-white border rounded-2xl shadow-sm p-5 sm:p-8">
+        <h1 className="text-2xl sm:text-3xl font-bold text-mindease-900 mb-2">Client Appointments</h1>
         <p className="text-mindease-600">
           Manage appointments with your clients and track their booking status.
         </p>
@@ -123,13 +141,13 @@ const TherapistAppointments = () => {
             <p className="text-mindease-600 mt-2">Loading appointments...</p>
           </div>
         ) : appointments.length === 0 ? (
-          <div className="bg-white border rounded-2xl p-12 text-center">
+          <div className="bg-white border rounded-2xl p-6 sm:p-12 text-center">
             <Calendar className="h-12 w-12 text-mindease-300 mx-auto mb-3" />
             <p className="text-mindease-600">No appointments found.</p>
           </div>
         ) : (
           appointments.map((appt) => (
-            <div key={appt._id} className="bg-white border rounded-2xl shadow-sm p-6 hover:shadow-md transition">
+            <div key={appt._id} className="bg-white border rounded-2xl shadow-sm p-4 sm:p-6 hover:shadow-md transition">
               <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
                 {/* Client Info */}
                 <div className="flex-1 space-y-3">
@@ -188,7 +206,7 @@ const TherapistAppointments = () => {
                       <button
                         onClick={() => handleStatusChange(appt._id, "confirmed")}
                         disabled={updating === appt._id}
-                        className="px-3 py-1 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700 disabled:opacity-50"
+                        className="px-3 py-1 bg-mindease-600 text-white rounded-lg text-sm hover:bg-mindease-700 disabled:opacity-50"
                       >
                         Confirm
                       </button>
@@ -206,7 +224,7 @@ const TherapistAppointments = () => {
                     <button
                       onClick={() => handleStatusChange(appt._id, "completed")}
                       disabled={updating === appt._id}
-                      className="px-3 py-1 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 disabled:opacity-50"
+                      className="px-3 py-1 bg-mindease-500 text-white rounded-lg text-sm hover:bg-mindease-600 disabled:opacity-50"
                     >
                       Mark Complete
                     </button>

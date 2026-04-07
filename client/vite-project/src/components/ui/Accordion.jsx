@@ -5,17 +5,17 @@ export function Accordion({ children, className = "" }) {
 }
 
 export function AccordionItem({ value, children, className = "" }) {
-  return <div className={`border-b ${className}`}>{children}</div>;
+  return <div className={`rounded-xl border border-mindease-100 bg-white/80 px-4 md:px-5 ${className}`}>{children}</div>;
 }
 
-export function AccordionTrigger({ children, onClick }) {
+export function AccordionTrigger({ children, onClick, open }) {
   return (
     <button
       onClick={onClick}
-      className="w-full text-left py-4 font-medium flex items-center justify-between"
+      className="focus-outline flex w-full items-center justify-between py-4 text-left font-medium"
     >
       {children}
-      <span className="ml-4 text-xl leading-none">+</span>
+      <span className="ml-4 text-xl leading-none text-mindease-600">{open ? "−" : "+"}</span>
     </button>
   );
 }

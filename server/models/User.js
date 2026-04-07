@@ -33,6 +33,10 @@ const userSchema = new mongoose.Schema({
     enum: ['user', 'therapist'],
     default: 'user'
   },
+  roleLocked: {
+    type: Boolean,
+    default: false,
+  },
   // Add more fields if needed
 }, {timestamps: true});
 

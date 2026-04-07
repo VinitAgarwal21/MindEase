@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { Save, ArrowLeft } from "lucide-react";
 import { useAuth } from "../context/AuthContext.jsx";
 import { resizeImageToDataUrl } from "../utils/imageUpload.js";
+import { API_BASE_URL } from "../config/env";
 
 const SPECIALTIES = [
   "Anxiety",
@@ -37,7 +38,7 @@ export default function TherapistProfileEdit() {
     try {
       const token = await getAuthToken();
 
-      const response = await fetch("http://localhost:5000/api/therapists/my-profile", {
+      const response = await fetch(`${API_BASE_URL}/api/therapists/my-profile`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -112,7 +113,7 @@ export default function TherapistProfileEdit() {
     try {
       const token = await getAuthToken();
 
-      const response = await fetch("http://localhost:5000/api/therapists/profile", {
+      const response = await fetch(`${API_BASE_URL}/api/therapists/profile`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -156,9 +157,9 @@ export default function TherapistProfileEdit() {
   }
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto">
-      <div className="bg-white border rounded-2xl shadow-sm p-8">
-        <div className="flex items-center gap-4 mb-6">
+    <div className="space-y-6 max-w-4xl mx-auto px-1 sm:px-0">
+      <div className="bg-white border rounded-2xl shadow-sm p-5 sm:p-8">
+        <div className="flex items-start sm:items-center gap-3 sm:gap-4 mb-6">
           <button
             onClick={() => navigate("/therapist/appointments")}
             className="p-2 hover:bg-mindease-50 rounded-lg transition"
@@ -166,7 +167,7 @@ export default function TherapistProfileEdit() {
             <ArrowLeft className="h-5 w-5 text-mindease-600" />
           </button>
           <div>
-            <h1 className="text-3xl font-semibold text-mindease-900">Edit Your Profile</h1>
+            <h1 className="text-2xl sm:text-3xl font-semibold text-mindease-900">Edit Your Profile</h1>
             <p className="text-mindease-600 mt-1">Update your professional information</p>
           </div>
         </div>
@@ -287,7 +288,7 @@ export default function TherapistProfileEdit() {
             />
           </div>
 
-          <div className="flex items-center justify-end gap-3 pt-4">
+          <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-3 pt-4">
             <button
               type="button"
               onClick={() => navigate("/therapist/appointments")}

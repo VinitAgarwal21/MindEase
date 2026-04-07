@@ -12,6 +12,7 @@ import {
   Legend,
   ReferenceLine,
 } from "recharts";
+import { API_BASE_URL } from "../config/env";
 
 function UserProfile() {
   const { id } = useParams();
@@ -22,8 +23,9 @@ function UserProfile() {
   const [journals, setJournals] = useState([]);
   const [journalsLoading, setJournalsLoading] = useState(true);
   const [journalError, setJournalError] = useState(null);
+  const [isDarkMode, setIsDarkMode] = useState(() => document.documentElement.classList.contains("dark"));
 
-  const API_BASE = "http://localhost:5000";
+  const API_BASE = API_BASE_URL;
 
   // ---------------- New helper: convert numeric avg to label + color + emoji ---------------
 function moodLabel(score) {
@@ -34,7 +36,7 @@ function moodLabel(score) {
   const s = Number(score);
   if (s >= 8.5) return { label: "Very Positive", emoji: "😁", color: "text-green-800", bg: "bg-green-50" };
   if (s >= 7) return { label: "Positive", emoji: "🙂", color: "text-emerald-800", bg: "bg-emerald-50" };
-  if (s >= 5) return { label: "Neutral", emoji: "😐", color: "text-indigo-700", bg: "bg-indigo-50" };
+  if (s >= 5) return { label: "Neutral", emoji: "😐", color: "text-mindease-700", bg: "bg-mindease-100" };
   if (s >= 3) return { label: "Negative", emoji: "😕", color: "text-yellow-800", bg: "bg-yellow-50" };
   return { label: "Very Negative", emoji: "😞", color: "text-red-700", bg: "bg-red-50" };
 }
@@ -44,7 +46,7 @@ function moodLabel(score) {
     const fetchProfile = async () => {
       try {
         const token = await getAuthToken();
-        const res = await fetch(`http://localhost:5000/api/users/${id}`, {
+        const res = await fetch(`${API_BASE_URL}/api/users/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
@@ -65,6 +67,16 @@ function moodLabel(score) {
     };
     fetchProfile();
   }, [id, getAuthToken]);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    const observer = new MutationObserver(() => {
+      setIsDarkMode(root.classList.contains("dark"));
+    });
+
+    observer.observe(root, { attributes: true, attributeFilter: ["class"] });
+    return () => observer.disconnect();
+  }, []);
 
   // Journals are now fetched along with the profile above — no separate fetch needed
   // (server returns only this user's journals)
@@ -170,28 +182,28 @@ arr.push({
 
   if (loading)
     return (
-      <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-indigo-50 to-blue-100">
-        <div className="text-lg text-indigo-700 animate-pulse">Loading profile...</div>
+      <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-mindease-50 to-accent-100/60">
+        <div className="text-lg text-mindease-700 animate-pulse">Loading profile...</div>
       </div>
     );
 
   if (!user)
     return (
-      <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-indigo-50 to-blue-100">
+      <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-mindease-50 to-accent-100/60">
         <div className="text-lg text-gray-500">User not found</div>
       </div>
     );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-sky-50 to-emerald-50 p-8 md:p-16 transition-all">
+    <div className="min-h-screen bg-gradient-to-br from-mindease-50 via-mindease-100/50 to-accent-100/55 p-4 sm:p-6 md:p-10 transition-all">
       {/* User Info */}
-      <div className="bg-white/70 backdrop-blur-md rounded-3xl shadow-xl p-8 mb-6 border border-indigo-100">
+      <div className="bg-white/75 backdrop-blur-md rounded-3xl shadow-xl p-5 sm:p-8 mb-6 border border-mindease-100">
         <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
-          <div className="w-24 h-24 rounded-full bg-gradient-to-br from-indigo-300 to-sky-300 flex items-center justify-center text-white text-3xl font-bold shadow-lg">
+          <div className="w-24 h-24 rounded-full bg-gradient-to-br from-mindease-400 to-mindease-600 flex items-center justify-center text-white text-3xl font-bold shadow-lg">
             {user?.name?.charAt(0)?.toUpperCase() || "U"}
           </div>
           <div>
-            <h1 className="text-4xl font-semibold text-indigo-800 mb-1">{user?.name || "Unknown"}</h1>
+            <h1 className="text-3xl sm:text-4xl font-semibold text-mindease-800 mb-1">{user?.name || "Unknown"}</h1>
             <p className="text-gray-700">{user?.email || "—"}</p>
             <p className="text-gray-600 mt-1 capitalize">Gender: {user?.gender || "N/A"}</p>
           </div>
@@ -199,22 +211,22 @@ arr.push({
       </div>
 
       {/* Journal Dashboard */}
-      <div className="bg-white/70 backdrop-blur-md rounded-3xl shadow-xl p-6 mb-8 border border-indigo-100">
-        <div className="flex items-center justify-between mb-4">
+      <div className="bg-white/75 backdrop-blur-md rounded-3xl shadow-xl p-5 sm:p-6 mb-8 border border-mindease-100">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-4">
           <div>
-            <h2 className="text-2xl font-semibold text-indigo-800">Journal Mood Dashboard</h2>
+            <h2 className="text-2xl font-semibold text-mindease-800">Journal Mood Dashboard</h2>
             <p className="text-sm text-gray-500">Average mood over the last 7 days (higher is more positive)</p>
           </div>
                     {/* --------- Stats panel (REPLACE THIS BLOCK) --------- */}
           <div className="text-right flex flex-col items-end gap-2">
             <div className="text-sm text-gray-500">Entries</div>
-            <div className="text-2xl font-bold text-indigo-700">{entriesCount}</div>
+            <div className="text-2xl font-bold text-mindease-700">{entriesCount}</div>
 
             {/* overall average number */}
             <div className="mt-1 text-sm text-gray-500">Overall average</div>
             <div className="flex items-center gap-3">
               {/* big numeric pill */}
-              <div className="px-3 py-1 rounded-xl bg-white shadow-sm border border-indigo-100 text-indigo-800 font-semibold text-lg">
+              <div className="px-3 py-1 rounded-xl bg-white shadow-sm border border-mindease-100 text-mindease-800 font-semibold text-lg">
                 {overallAvg !== null ? overallAvg : "—"}
               </div>
 
@@ -247,7 +259,7 @@ arr.push({
                 <YAxis domain={[0, 10]} tick={{ fontSize: 12 }} />
                 <Tooltip />
                 <Legend />
-                <ReferenceLine y={5} stroke="#8884d8" strokeDasharray="3 3" label={{ value: "Neutral", position: "right" }} />
+                <ReferenceLine y={5} stroke="#6c909b" strokeDasharray="3 3" label={{ value: "Neutral", position: "right" }} />
                 {/* NEW: show a visible dot at every data point and highlight on hover */}
                 {/* Vertical axis-to-point lines */}
 {dailyAggregates.map((d, idx) => (
@@ -268,17 +280,17 @@ arr.push({
 <Line
   type="monotone"
   dataKey="avg"
-  stroke="#4f46e5"      // main curve color (optional)
+  stroke="#4d8a98"
   strokeWidth={2}
   dot={(props) => {
     const { cx, cy, payload } = props;
-    const color = payload.isPositive ? "green" : "red";
+    const color = payload.isPositive ? (isDarkMode ? "#8fe0b6" : "green") : (isDarkMode ? "#f4b3bf" : "red");
     return (
       <circle
         cx={cx}
         cy={cy}
         r={5}
-        stroke="white"
+        stroke={isDarkMode ? "#0f1d25" : "white"}
         strokeWidth={2}
         fill={color}
       />
@@ -299,15 +311,15 @@ arr.push({
       </div>
 
       {/* Appointments */}
-      <div className="bg-white/70 backdrop-blur-md rounded-3xl shadow-xl p-8 border border-indigo-100">
-        <h2 className="text-3xl font-semibold mb-6 text-indigo-800 flex items-center gap-2">🌿 My Appointments</h2>
+      <div className="bg-white/75 backdrop-blur-md rounded-3xl shadow-xl p-5 sm:p-8 border border-mindease-100">
+        <h2 className="text-2xl sm:text-3xl font-semibold mb-6 text-mindease-800 flex items-center gap-2">🌿 My Appointments</h2>
 
         {appointments.length === 0 ? (
           <p className="text-gray-500 italic text-center py-6">No appointments yet. Take a deep breath and schedule one soon 🌸</p>
         ) : (
           <div className="overflow-x-auto">
-            <table className="min-w-full border border-indigo-100 rounded-lg overflow-hidden shadow-sm">
-              <thead className="bg-indigo-200/40 text-indigo-800">
+            <table className="min-w-full border border-mindease-100 rounded-lg overflow-hidden shadow-sm">
+              <thead className="bg-mindease-100/70 text-mindease-800">
                 <tr>
                   <th className="py-3 px-4 text-left font-medium">Therapist</th>
                   <th className="py-3 px-4 text-left font-medium">For</th>
@@ -316,9 +328,9 @@ arr.push({
                   <th className="py-3 px-4 text-left font-medium">Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-indigo-50">
+              <tbody className="divide-y divide-mindease-50">
                 {appointments.map((a) => (
-                  <tr key={a._id} className="hover:bg-indigo-50 transition-colors duration-200">
+                  <tr key={a._id} className="hover:bg-mindease-50 transition-colors duration-200">
                     <td className="py-3 px-4 text-gray-700">{a.therapistName}</td>
                     <td className="py-3 px-4 text-gray-700">{a.userName}</td>
                     <td className="py-3 px-4 text-gray-700">{a.preferredDate}</td>

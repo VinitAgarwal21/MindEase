@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
+import { API_BASE_URL } from "../config/env";
 
 function Therapists() {
   const [therapists, setTherapists] = useState([]);
@@ -12,7 +13,7 @@ function Therapists() {
 
   const fetchTherapists = async () => {
     try {
-      const response = await fetch("http://localhost:5000/api/therapists");
+      const response = await fetch(`${API_BASE_URL}/api/therapists`);
       if (!response.ok) throw new Error("Failed to fetch therapists");
       const data = await response.json();
       setTherapists(data);
@@ -26,7 +27,7 @@ function Therapists() {
 
   if (loading) {
     return (
-      <div className="p-10 bg-gray-50 min-h-screen flex items-center justify-center">
+      <div className="p-4 sm:p-6 bg-gray-50 min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-mindease-300 border-t-mindease-600"></div>
           <p className="text-mindease-600 mt-2">Loading therapists...</p>
@@ -36,15 +37,15 @@ function Therapists() {
   }
 
   return (
-    <div className="p-10 bg-gray-50 min-h-screen">
-      <h1 className="text-4xl font-bold mb-8 text-mindease-600">Our Therapists</h1>
+    <div className="p-4 sm:p-6 md:p-10 bg-gray-50 min-h-screen">
+      <h1 className="text-3xl sm:text-4xl font-bold mb-6 sm:mb-8 text-mindease-600">Our Therapists</h1>
 
       {therapists.length === 0 ? (
         <div className="text-center py-12">
           <p className="text-mindease-600">No therapists available at the moment.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
           {therapists.map((t) => (
             <div
               key={t._id}

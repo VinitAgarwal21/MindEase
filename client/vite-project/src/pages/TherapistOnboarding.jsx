@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { ShieldCheck, CalendarCheck, FileText, Sparkles } from "lucide-react";
 import { useAuth } from "../context/AuthContext.jsx";
 import { resizeImageToDataUrl } from "../utils/imageUpload.js";
+import { API_BASE_URL } from "../config/env";
 
 const SPECIALTIES = [
   "Anxiety",
@@ -39,7 +40,7 @@ export default function TherapistOnboarding() {
     try {
       const token = await getAuthToken();
 
-      const response = await fetch("http://localhost:5000/api/therapists/my-profile", {
+      const response = await fetch(`${API_BASE_URL}/api/therapists/my-profile`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -135,7 +136,7 @@ export default function TherapistOnboarding() {
     try {
       const token = await getAuthToken();
 
-      const response = await fetch("http://localhost:5000/api/therapists/profile", {
+      const response = await fetch(`${API_BASE_URL}/api/therapists/profile`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -168,8 +169,8 @@ export default function TherapistOnboarding() {
   };
 
   return (
-    <div className="space-y-8">
-      <header className="bg-white border rounded-2xl shadow-sm p-8 flex flex-col gap-3">
+    <div className="space-y-6 sm:space-y-8 max-w-6xl mx-auto px-1 sm:px-0">
+      <header className="bg-white border rounded-2xl shadow-sm p-5 sm:p-8 flex flex-col gap-3">
         <div className="inline-flex items-center gap-2 text-sm text-mindease-600 font-medium">
           <Sparkles className="h-4 w-4" />
           New therapist setup
@@ -177,12 +178,12 @@ export default function TherapistOnboarding() {
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <div>
             <p className="text-sm text-mindease-600">Welcome, {displayName}</p>
-            <h1 className="text-3xl font-semibold text-mindease-900">Let us personalize your practice</h1>
+            <h1 className="text-2xl sm:text-3xl font-semibold text-mindease-900">Let us personalize your practice</h1>
             <p className="text-mindease-600 mt-2">
               Share a few details so clients can discover you with the right expertise.
             </p>
           </div>
-          <div className="grid grid-cols-3 gap-3 text-center text-sm text-mindease-700">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-center text-sm text-mindease-700 w-full sm:w-auto">
             <div className="bg-mindease-50 border rounded-xl px-4 py-3">
               <p className="text-2xl font-semibold text-mindease-900">5 min</p>
               <p>to complete</p>
@@ -199,9 +200,9 @@ export default function TherapistOnboarding() {
         </div>
       </header>
 
-      <section className="grid md:grid-cols-3 gap-6">
+      <section className="grid md:grid-cols-3 gap-4 sm:gap-6">
         <div className="md:col-span-2 space-y-6">
-          <form className="bg-white border rounded-2xl shadow-sm p-6 space-y-5" onSubmit={handleSubmit}>
+          <form className="bg-white border rounded-2xl shadow-sm p-4 sm:p-6 space-y-5" onSubmit={handleSubmit}>
             <div>
               <label className="block text-sm font-medium text-mindease-800">Profile photo</label>
               <div className="mt-3 flex items-center gap-4 flex-wrap">
@@ -317,7 +318,7 @@ export default function TherapistOnboarding() {
               />
             </div>
 
-            <div className="flex items-center justify-end gap-3">
+            <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-3">
               <button
                 type="button"
                 onClick={() => navigate("/")}

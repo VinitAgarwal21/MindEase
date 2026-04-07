@@ -21,6 +21,12 @@ const authMiddleware = async (req, res, next) => {
     if (!user) {
       const clerkUser = await clerkClient.users.getUser(auth.userId);
       const email = getPrimaryEmail(clerkUser);
+      const metadataRole =
+        clerkUser.publicMetadata?.role === "therapist"
+          ? "therapist"
+          : clerkUser.publicMetadata?.role === "user"
+            ? "user"
+            : null;
 
       if (!email) {
         return res.status(401).json({ message: "Unable to resolve user email from Clerk" });
@@ -33,16 +39,16 @@ const authMiddleware = async (req, res, next) => {
           clerkId: auth.userId,
           name: `${clerkUser.firstName || ""} ${clerkUser.lastName || ""}`.trim() || "User",
           email,
-          role: clerkUser.publicMetadata?.role === "therapist" ? "therapist" : "user",
+          role: metadataRole || "user",
+          roleLocked: Boolean(metadataRole),
         });
       } else if (!user.clerkId) {
         user.clerkId = auth.userId;
-
-        if (clerkUser.publicMetadata?.role === "therapist" && user.role !== "therapist") {
-          user.role = "therapist";
-        }
-
         await user.save();
+      } else if (user.clerkId !== auth.userId) {
+        return res.status(409).json({
+          message: "This email is already registered. Please login with the same account.",
+        });
       }
     }
 

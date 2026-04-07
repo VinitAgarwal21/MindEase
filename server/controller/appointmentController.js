@@ -3,11 +3,18 @@ import { Therapist } from "../models/Therapist.js";
 import mongoose from "mongoose";
 import Razorpay from "razorpay";
 import crypto from "crypto";
+import { sendAppointmentConfirmedEmail } from "../utils/mailer.js";
 
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID || "",
-  key_secret: process.env.RAZORPAY_KEY_SECRET || "",
-});
+const getRazorpayClient = () => {
+  if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
+    return null;
+  }
+
+  return new Razorpay({
+    key_id: process.env.RAZORPAY_KEY_ID,
+    key_secret: process.env.RAZORPAY_KEY_SECRET,
+  });
+};
 
 /**
  * Create an appointment
@@ -80,6 +87,11 @@ export const createPaymentOrder = async (req, res) => {
 
     if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
       return res.status(500).json({ error: "Razorpay keys are not configured on server" });
+    }
+
+    const razorpay = getRazorpayClient();
+    if (!razorpay) {
+      return res.status(500).json({ error: "Razorpay client is not configured" });
     }
 
     const therapist = await Therapist.findById(therapistId);
@@ -263,8 +275,30 @@ export const updateAppointment = async (req, res) => {
       return res.status(403).json({ error: "Not authorized to update this appointment" });
     }
 
+    const previousStatus = appt.status;
     const updated = await Appointment.findByIdAndUpdate(id, updates, { new: true });
-    return res.json({ success: true, appointment: updated });
+
+    let emailNotification = { sent: false };
+    if (isTherapist && updates.status === "confirmed" && previousStatus !== "confirmed") {
+      try {
+        emailNotification = await sendAppointmentConfirmedEmail({
+          to: updated.userEmail,
+          userName: updated.userName,
+          therapistName: updated.therapistName,
+          preferredDate: updated.preferredDate,
+          preferredTime: updated.preferredTime,
+        });
+      } catch (mailErr) {
+        console.error("Failed to send confirmation email:", mailErr.message || mailErr);
+        emailNotification = { sent: false, reason: "EMAIL_SEND_FAILED" };
+      }
+    }
+
+    return res.json({
+      success: true,
+      appointment: updated,
+      emailNotification,
+    });
   } catch (err) {
     console.error("updateAppointment error:", err);
     return res.status(500).json({ error: "Server error" });

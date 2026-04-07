@@ -8,6 +8,7 @@ import { Loader2 } from "lucide-react";
 import "react-quill-new/dist/quill.snow.css";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
+import { API_BASE_URL } from "../config/env";
 
 const ReactQuill = lazy(() => import("react-quill-new"));
 
@@ -50,7 +51,7 @@ const JournalWrite = () => {
     setLoading(true);
     try {
       const token = await getAuthToken();
-      const res = await fetch("http://localhost:5000/api/journals/publish", {
+      const res = await fetch(`${API_BASE_URL}/api/journals/publish`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -74,7 +75,7 @@ const JournalWrite = () => {
     setIsDraftSaving(true);
     try {
       const token = await getAuthToken();
-      const res = await fetch("http://localhost:5000/api/journals/draft", {
+      const res = await fetch(`${API_BASE_URL}/api/journals/draft`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -93,8 +94,8 @@ const JournalWrite = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white-50 to-mindease-50 flex justify-center py-12 px-4">
-      <div className="bg-white/90 backdrop-blur-sm shadow-xl rounded-2xl p-10 w-full max-w-3xl border border-mindease-100">
-        <h1 className="text-4xl font-bold text-gray-800 mb-10 text-center">
+      <div className="bg-white/90 backdrop-blur-sm shadow-xl rounded-2xl p-5 sm:p-8 md:p-10 w-full max-w-3xl border border-mindease-100">
+        <h1 className="text-3xl sm:text-4xl font-bold text-gray-800 mb-8 sm:mb-10 text-center">
           What’s on your mind today?
         </h1>
 
@@ -187,7 +188,7 @@ const JournalWrite = () => {
           </div>
 
           {/* Buttons */}
-          <div className="flex justify-between items-center pt-4">
+          <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 pt-4">
             <button
               type="button"
               onClick={handleSubmit(handleSaveDraft)}

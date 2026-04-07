@@ -3,6 +3,8 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useAuth } from "../context/AuthContext.jsx";
+import { CircleCheck, CircleX, AlertCircle } from "lucide-react";
+import { API_BASE_URL } from "../config/env";
 
 const loadRazorpayScript = () => {
   return new Promise((resolve) => {
@@ -45,7 +47,7 @@ const TherapistDetail = () => {
 
   const fetchTherapist = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/therapists/${id}`);
+      const response = await fetch(`${API_BASE_URL}/api/therapists/${id}`);
       if (!response.ok) throw new Error("Therapist not found");
       const data = await response.json();
       setTherapist(data);
@@ -111,7 +113,7 @@ const TherapistDetail = () => {
       }
 
       const token = await getAuthToken();
-      const orderRes = await fetch("http://localhost:5000/api/appointments/create-payment-order", {
+      const orderRes = await fetch(`${API_BASE_URL}/api/appointments/create-payment-order`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -137,7 +139,7 @@ const TherapistDetail = () => {
         theme: { color: "#4f46e5" },
         handler: async function (response) {
           try {
-            const verifyRes = await fetch("http://localhost:5000/api/appointments/verify-payment-and-book", {
+            const verifyRes = await fetch(`${API_BASE_URL}/api/appointments/verify-payment-and-book`, {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
@@ -156,12 +158,16 @@ const TherapistDetail = () => {
               throw new Error(verifyData.error || "Payment verification failed");
             }
 
-            toast.success("Payment successful and appointment booked.");
+            toast.success("Payment successful and appointment booked.", {
+              icon: <CircleCheck size={16} />,
+            });
             bookingFormRef?.reset();
             setPendingPayload(null);
             navigate("/therapist");
           } catch (verifyError) {
-            toast.error(verifyError.message || "Payment done but booking failed. Contact support.");
+            toast.error(verifyError.message || "Payment done but booking failed. Contact support.", {
+              icon: <CircleX size={16} />,
+            });
           } finally {
             setBookingLoading(false);
           }
@@ -169,7 +175,9 @@ const TherapistDetail = () => {
         modal: {
           ondismiss: function () {
             setBookingLoading(false);
-            toast.error("Payment cancelled.");
+            toast.warning("Payment cancelled.", {
+              icon: <AlertCircle size={16} />,
+            });
           },
         },
       };
@@ -179,15 +187,17 @@ const TherapistDetail = () => {
       paymentObject.open();
     } catch (err) {
       console.error(err);
-      toast.error("Failed to book: " + err.message);
+      toast.error("Failed to book: " + err.message, {
+        icon: <CircleX size={16} />,
+      });
     } finally {
       setBookingLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex justify-center items-start py-10">
-      <div className="bg-white shadow-xl rounded-2xl p-8 w-full max-w-3xl">
+    <div className="min-h-screen bg-gray-50 flex justify-center items-start py-6 sm:py-10 px-3 sm:px-0">
+      <div className="bg-white shadow-xl rounded-2xl p-4 sm:p-8 w-full max-w-3xl">
         {/* Back Button */}
         <Link
           to="/therapist"
@@ -197,14 +207,14 @@ const TherapistDetail = () => {
         </Link>
 
         {/* Therapist Header */}
-        <div className="flex flex-col md:flex-row gap-8 mb-8 items-center md:items-start">
+        <div className="flex flex-col md:flex-row gap-5 sm:gap-8 mb-8 items-center md:items-start">
           <img
             src={therapist.profilePicture || "https://randomuser.me/api/portraits/lego/1.jpg"}
             alt={therapist.name}
             className="w-40 h-40 rounded-2xl object-cover shadow-md"
           />
           <div className="flex flex-col justify-center space-y-1 text-center md:text-left">
-            <h1 className="text-3xl font-semibold text-gray-800">{therapist.name}</h1>
+            <h1 className="text-2xl sm:text-3xl font-semibold text-gray-800">{therapist.name}</h1>
             {therapist.headline && (
               <p className="text-mindease-600 text-lg font-medium">
                 {therapist.headline}
@@ -235,8 +245,8 @@ const TherapistDetail = () => {
         )}
 
         {/* Booking Form */}
-        <div className="bg-gray-100 rounded-2xl p-6">
-          <h2 className="text-xl font-semibold mb-4 text-gray-800">
+        <div className="bg-gray-100 rounded-2xl p-4 sm:p-6">
+          <h2 className="text-lg sm:text-xl font-semibold mb-4 text-gray-800">
             Book an Appointment
           </h2>
           <form className="space-y-5" onSubmit={handleBooking}>
@@ -309,7 +319,7 @@ const TherapistDetail = () => {
               />
             </div>
 
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col sm:flex-row gap-3 sm:justify-between sm:items-center">
               <p className="text-lg font-semibold text-gray-700">
                 Session Fee: ₹{therapist.hourlyRate || 0}
               </p>
@@ -334,7 +344,7 @@ const TherapistDetail = () => {
 
       {showPaymentModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+          <div className="w-full max-w-md rounded-2xl bg-white p-4 sm:p-6 shadow-2xl">
             <h3 className="text-xl font-semibold text-gray-900">Confirm Payment</h3>
             <p className="mt-2 text-gray-600">Pay the amount below to book your appointment.</p>
 
