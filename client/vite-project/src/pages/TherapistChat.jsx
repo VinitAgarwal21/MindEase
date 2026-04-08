@@ -37,7 +37,7 @@ export default function TherapistChat() {
   useEffect(() => {
     try {
       localStorage.setItem(storageKey, JSON.stringify(messages));
-    } catch (_) {}
+    } catch (_) { }
   }, [messages, storageKey]);
 
   // auto-scroll
@@ -79,7 +79,7 @@ export default function TherapistChat() {
   return (
     <main className="min-h-screen bg-gray-100 flex items-center justify-center p-6">
       <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-xl">
-        <h1 className="text-2xl font-bold text-center mb-4 text-blue-700">Therapist Chat</h1>
+        <h1 className="text-3xl sm:text-4xl mb-6 font-bold gradient-title inline-block">Therapist Chatbot</h1>
 
         <div className="h-96 overflow-y-auto mb-4 space-y-4 p-3 bg-gray-50 rounded">
           {messages.map((m, i) => (

@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
-import { Calendar, Mail, User, Clock, FileText, CheckCircle, AlertCircle, CircleCheck, CircleX } from "lucide-react";
+import { Calendar, Mail, User, Clock, FileText, CheckCircle, AlertCircle, CircleCheck, CircleX, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "../context/AuthContext.jsx";
+import { useNavigate } from "react-router-dom";
 import { API_BASE_URL } from "../config/env";
 
 const TherapistAppointments = () => {
   const { user, getAuthToken } = useAuth();
+  const navigate = useNavigate();
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
@@ -229,6 +231,15 @@ const TherapistAppointments = () => {
                       Mark Complete
                     </button>
                   )}
+
+                  {/* Chat Button */}
+                  <button
+                    onClick={() => navigate(`/chat/${appt.userId?._id || appt.userId}`)}
+                    className="flex items-center gap-2 px-3 py-1 bg-white border border-mindease-200 text-mindease-700 rounded-lg text-sm hover:bg-mindease-50 transition"
+                  >
+                    <MessageCircle className="h-4 w-4" />
+                    Chat with Client
+                  </button>
 
                   <p className="text-xs text-mindease-500 mt-2">
                     {new Date(appt.createdAt).toLocaleDateString()} at{" "}

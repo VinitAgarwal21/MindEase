@@ -12,6 +12,7 @@ import EmotionPredictor from "./pages/EmotionPredictor";
 import TherapistOnboarding from "./pages/TherapistOnboarding";
 import TherapistAppointments from "./pages/TherapistAppointments";
 import TherapistProfileEdit from "./pages/TherapistProfileEdit";
+import Chat from "./pages/Chat";
 import { useAuth } from "./context/AuthContext";
 
 function RequireAuth({ children }) {
@@ -36,12 +37,13 @@ function RequireTherapist({ children }) {
 function App() {
   return (
     <Routes>
+      <Route path="/chat/:id" element={<RequireAuth><Chat /></RequireAuth>} />
+
       <Route element={<MainLayout />}>
         <Route path="/" element={<Home />} />
-        {/* later: <Route path="/dashboard" element={<Dashboard />} /> */}
         <Route path="/videos" element={<VideosPage />} />
-          <Route path="/therapistchat" element={<TherapistChat />} />
-             <Route path="/therapist" element={<Therapists />} />
+        <Route path="/therapistchat" element={<TherapistChat />} />
+        <Route path="/therapist" element={<Therapists />} />
         <Route path="/therapist/:id" element={<TherapistDetail />} />
         <Route path="/therapist/onboarding" element={<RequireTherapist><TherapistOnboarding /></RequireTherapist>} />
         <Route path="/therapist/appointments" element={<RequireTherapist><TherapistAppointments /></RequireTherapist>} />

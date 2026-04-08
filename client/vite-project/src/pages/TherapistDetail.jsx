@@ -235,6 +235,12 @@ const TherapistDetail = () => {
             )}
           </div>
         </div>
+        <button 
+          onClick={() => navigate(`/chat/${therapist._id}`)}
+          className="px-8 py-2.5 bg-mindease-500 text-white font-medium rounded-lg hover:bg-mindease-600 transition disabled:opacity-50"
+        >
+          Chat
+        </button>
 
         {/* About Section */}
         {therapist.bio && (
@@ -243,6 +249,8 @@ const TherapistDetail = () => {
             <p className="text-gray-700 leading-relaxed">{therapist.bio}</p>
           </div>
         )}
+
+
 
         {/* Booking Form */}
         <div className="bg-gray-100 rounded-2xl p-4 sm:p-6">
@@ -330,8 +338,10 @@ const TherapistDetail = () => {
               >
                 {bookingLoading ? "Booking..." : "Book Appointment"}
               </button>
+
             </div>
           </form>
+
         </div>
 
         {/* Footer Note */}

@@ -51,10 +51,9 @@ export default function Navbar() {
   };
 
   const navLinkClass = ({ isActive }) =>
-    `tap-target inline-flex items-center rounded-full px-3 py-1.5 text-sm font-medium transition ${
-      isActive
-        ? "bg-mindease-100 text-mindease-700"
-        : "text-mindease-700 hover:bg-mindease-100/70 hover:text-mindease-800"
+    `tap-target inline-flex items-center rounded-full px-3 py-1.5 text-sm font-medium transition ${isActive
+      ? "bg-mindease-100 text-mindease-700"
+      : "text-mindease-700 hover:bg-mindease-100/70 hover:text-mindease-800"
     }`;
 
   const handleMobileNavigate = (path) => {
@@ -66,7 +65,7 @@ export default function Navbar() {
     <header className="sticky top-0 z-40 border-b border-mindease-100 bg-white/85 backdrop-blur-md">
       <div className="container mx-auto h-14 px-4 flex items-center justify-between">
         {/* Logo */}
-        <Link to="/" className="font-display text-3xl font-bold text-mindease-600">
+        <Link to="/" className="text-3xl sm:text-4xl font-bold gradient-title inline-block">
           MindEase
         </Link>
 

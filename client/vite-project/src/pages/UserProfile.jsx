@@ -28,18 +28,18 @@ function UserProfile() {
   const API_BASE = API_BASE_URL;
 
   // ---------------- New helper: convert numeric avg to label + color + emoji ---------------
-function moodLabel(score) {
-  // score expected ~0..10 (null handled)
-  if (score === null || score === undefined) {
-    return { label: "No data", emoji: "—", color: "text-gray-500", bg: "bg-gray-100" };
+  function moodLabel(score) {
+    // score expected ~0..10 (null handled)
+    if (score === null || score === undefined) {
+      return { label: "No data", emoji: "—", color: "text-gray-500", bg: "bg-gray-100" };
+    }
+    const s = Number(score);
+    if (s >= 8.5) return { label: "Very Positive", emoji: "😁", color: "text-green-800", bg: "bg-green-50" };
+    if (s >= 7) return { label: "Positive", emoji: "🙂", color: "text-emerald-800", bg: "bg-emerald-50" };
+    if (s >= 5) return { label: "Neutral", emoji: "😐", color: "text-mindease-700", bg: "bg-mindease-100" };
+    if (s >= 3) return { label: "Negative", emoji: "😕", color: "text-yellow-800", bg: "bg-yellow-50" };
+    return { label: "Very Negative", emoji: "😞", color: "text-red-700", bg: "bg-red-50" };
   }
-  const s = Number(score);
-  if (s >= 8.5) return { label: "Very Positive", emoji: "😁", color: "text-green-800", bg: "bg-green-50" };
-  if (s >= 7) return { label: "Positive", emoji: "🙂", color: "text-emerald-800", bg: "bg-emerald-50" };
-  if (s >= 5) return { label: "Neutral", emoji: "😐", color: "text-mindease-700", bg: "bg-mindease-100" };
-  if (s >= 3) return { label: "Negative", emoji: "😕", color: "text-yellow-800", bg: "bg-yellow-50" };
-  return { label: "Very Negative", emoji: "😞", color: "text-red-700", bg: "bg-red-50" };
-}
 
 
   useEffect(() => {
@@ -160,12 +160,12 @@ function moodLabel(score) {
     for (const [date, { sum, count }] of map.entries()) {
       const avg = count > 0 ? +(sum / count).toFixed(2) : null;
 
-arr.push({
-  date,
-  avg,
-  count,
-  isPositive: avg !== null ? avg >= 5 : null,  // NEW: positivity flag
-});
+      arr.push({
+        date,
+        avg,
+        count,
+        isPositive: avg !== null ? avg >= 5 : null,  // NEW: positivity flag
+      });
 
     }
     // sort by date ascending (map insertion order already ascending)
@@ -205,7 +205,7 @@ arr.push({
           <div>
             <h1 className="text-3xl sm:text-4xl font-semibold text-mindease-800 mb-1">{user?.name || "Unknown"}</h1>
             <p className="text-gray-700">{user?.email || "—"}</p>
-            <p className="text-gray-600 mt-1 capitalize">Gender: {user?.gender || "N/A"}</p>
+            {/* <p className="text-gray-600 mt-1 capitalize">Gender: {user?.gender || "N/A"}</p> */}
           </div>
         </div>
       </div>
@@ -217,7 +217,7 @@ arr.push({
             <h2 className="text-2xl font-semibold text-mindease-800">Journal Mood Dashboard</h2>
             <p className="text-sm text-gray-500">Average mood over the last 7 days (higher is more positive)</p>
           </div>
-                    {/* --------- Stats panel (REPLACE THIS BLOCK) --------- */}
+          {/* --------- Stats panel (REPLACE THIS BLOCK) --------- */}
           <div className="text-right flex flex-col items-end gap-2">
             <div className="text-sm text-gray-500">Entries</div>
             <div className="text-2xl font-bold text-mindease-700">{entriesCount}</div>
@@ -262,42 +262,42 @@ arr.push({
                 <ReferenceLine y={5} stroke="#6c909b" strokeDasharray="3 3" label={{ value: "Neutral", position: "right" }} />
                 {/* NEW: show a visible dot at every data point and highlight on hover */}
                 {/* Vertical axis-to-point lines */}
-{dailyAggregates.map((d, idx) => (
-  d.avg !== null && (
-    <ReferenceLine
-      key={idx}
-      x={d.date}
-      stroke={d.isPositive ? "green" : "red"}
-      strokeWidth={2}
-      segment={[
-        { x: d.date, y: 0 },       // start at x-axis
-        { x: d.date, y: d.avg }    // end at point
-      ]}
-    />
-  )
-))}
+                {dailyAggregates.map((d, idx) => (
+                  d.avg !== null && (
+                    <ReferenceLine
+                      key={idx}
+                      x={d.date}
+                      stroke={d.isPositive ? "green" : "red"}
+                      strokeWidth={2}
+                      segment={[
+                        { x: d.date, y: 0 },       // start at x-axis
+                        { x: d.date, y: d.avg }    // end at point
+                      ]}
+                    />
+                  )
+                ))}
 
-<Line
-  type="monotone"
-  dataKey="avg"
-  stroke="#4d8a98"
-  strokeWidth={2}
-  dot={(props) => {
-    const { cx, cy, payload } = props;
-    const color = payload.isPositive ? (isDarkMode ? "#8fe0b6" : "green") : (isDarkMode ? "#f4b3bf" : "red");
-    return (
-      <circle
-        cx={cx}
-        cy={cy}
-        r={5}
-        stroke={isDarkMode ? "#0f1d25" : "white"}
-        strokeWidth={2}
-        fill={color}
-      />
-    );
-  }}
-  activeDot={{ r: 7 }}
-/>
+                <Line
+                  type="monotone"
+                  dataKey="avg"
+                  stroke="#4d8a98"
+                  strokeWidth={2}
+                  dot={(props) => {
+                    const { cx, cy, payload } = props;
+                    const color = payload.isPositive ? (isDarkMode ? "#8fe0b6" : "green") : (isDarkMode ? "#f4b3bf" : "red");
+                    return (
+                      <circle
+                        cx={cx}
+                        cy={cy}
+                        r={5}
+                        stroke={isDarkMode ? "#0f1d25" : "white"}
+                        strokeWidth={2}
+                        fill={color}
+                      />
+                    );
+                  }}
+                  activeDot={{ r: 7 }}
+                />
 
 
               </LineChart>
@@ -312,10 +312,10 @@ arr.push({
 
       {/* Appointments */}
       <div className="bg-white/75 backdrop-blur-md rounded-3xl shadow-xl p-5 sm:p-8 border border-mindease-100">
-        <h2 className="text-2xl sm:text-3xl font-semibold mb-6 text-mindease-800 flex items-center gap-2">🌿 My Appointments</h2>
+        <h2 className="text-2xl sm:text-3xl font-semibold mb-6 text-mindease-800 flex items-center gap-2">My Appointments</h2>
 
         {appointments.length === 0 ? (
-          <p className="text-gray-500 italic text-center py-6">No appointments yet. Take a deep breath and schedule one soon 🌸</p>
+          <p className="text-gray-500 italic text-center py-6">No appointments yet. Take a deep breath and schedule one soon </p>
         ) : (
           <div className="overflow-x-auto">
             <table className="min-w-full border border-mindease-100 rounded-lg overflow-hidden shadow-sm">
@@ -335,9 +335,8 @@ arr.push({
                     <td className="py-3 px-4 text-gray-700">{a.userName}</td>
                     <td className="py-3 px-4 text-gray-700">{a.preferredDate}</td>
                     <td className="py-3 px-4 text-gray-700">{a.preferredTime}</td>
-                    <td className={`py-3 px-4 font-medium capitalize ${
-                        a.status === "pending" ? "text-yellow-600" :
-                        a.status === "completed" ? "text-green-600" :
+                    <td className={`py-3 px-4 font-medium capitalize ${a.status === "pending" ? "text-yellow-600" :
+                      a.status === "completed" ? "text-green-600" :
                         a.status === "cancelled" ? "text-red-600" : "text-gray-700"
                       }`}>
                       {a.status}

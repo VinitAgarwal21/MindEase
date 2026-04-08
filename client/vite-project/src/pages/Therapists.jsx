@@ -38,7 +38,7 @@ function Therapists() {
 
   return (
     <div className="p-4 sm:p-6 md:p-10 bg-gray-50 min-h-screen">
-      <h1 className="text-3xl sm:text-4xl font-bold mb-6 sm:mb-8 text-mindease-600">Our Therapists</h1>
+      <h1 className="text-3xl sm:text-4xl mb-6 font-bold gradient-title inline-block">Our Therapists</h1>
 
       {therapists.length === 0 ? (
         <div className="text-center py-12">
