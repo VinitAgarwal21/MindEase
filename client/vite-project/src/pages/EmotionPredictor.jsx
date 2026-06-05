@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext.jsx";
-import { API_BASE_URL } from "../config/env";
+import { API_BASE_URL, MODEL_SERVICE_URL } from "../config/env";
 
 
 /**
@@ -119,7 +119,7 @@ export default function EmotionPredictor() {
     setEmotions(null);
 
     try {
-      const resp = await fetch("http://localhost:8000/predict", {
+      const resp = await fetch(`${MODEL_SERVICE_URL}/predict`, {
         method: "POST",
         mode: "cors",
         headers: { "Content-Type": "application/json" },
